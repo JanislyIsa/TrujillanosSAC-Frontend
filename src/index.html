@@ -1,2 +1,32 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><title>Inventario · El Trujillano</title><base href="/"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0c213b"><meta name="description" content="Gestión de inventario de El Trujillano S.A.C."></head><body><app-root></app-root></body></html>
+<html lang="es"><head><meta charset="utf-8"><title>Inventario · El Trujillano</title><base href="/"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0c213b"><meta name="description" content="Gestión de inventario de El Trujillano S.A.C.">
+<script>
+  (() => {
+    if (window.location.hash) return;
+    const aliases = {
+      '/login': '/login',
+      '/admin/dashboard': '/dashboard',
+      '/admin/inventario': '/inventario/stock',
+      '/admin/productos': '/inventario/catalogo',
+      '/control-stock': '/inventario/stock',
+      '/movimientos': '/inventario/movimientos',
+      '/alertas': '/inventario/alertas',
+      '/admin/compras/solicitudes': '/solicitudes',
+      '/admin/compras/carrito': '/carrito',
+      '/admin/compras/cotizaciones': '/cotizaciones',
+      '/admin/compras/ordenes': '/ordenes',
+      '/inventario/catalogo': '/catalogo',
+      '/inventario/stock': '/stock',
+      '/inventario/movimientos': '/movimientos',
+      '/inventario/alertas': '/alertas',
+      '/compras/solicitudes': '/solicitudes',
+      '/compras/carrito': '/carrito',
+      '/compras/cotizaciones': '/cotizaciones',
+      '/compras/ordenes': '/ordenes'
+    };
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    const route = aliases[path];
+    if (route) window.history.replaceState(null, '', '/#' + route);
+  })();
+</script>
+</head><body><app-root></app-root></body></html>
