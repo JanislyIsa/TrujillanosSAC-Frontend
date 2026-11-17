@@ -13,8 +13,16 @@
             "browser": "src/main.ts",
             "index": "src/index.html",
             "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              }
+            ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "src/app/features/compras/compras.css"
             ],
             "outputPath": "dist/inventario"
           },
@@ -38,6 +46,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "development": {
               "buildTarget": "inventario:build:development"

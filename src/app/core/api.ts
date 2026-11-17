@@ -5,7 +5,7 @@ import { Pagina } from './models';
 export const API = '/api/v1/inventario';
 export function mensajeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
-    if (error.status === 0) return 'No se pudo conectar con el servidor. Comprueba la conexión y vuelve a intentar.';
+    if (error.status === 0 || error.status === 502 || error.status === 503 || error.status === 504) return 'No se pudo conectar con el backend. Comprueba que esté ejecutándose en localhost:8080 y vuelve a intentar.';
     if (error.status === 401) return error.error?.mensaje ?? 'Tu sesión terminó. Inicia sesión para continuar.';
     if (error.status === 403) return 'No tienes permiso para esta operación o la sesión cambió. Actualiza la página.';
     const campos = error.error?.errores as Record<string,string>|undefined;
