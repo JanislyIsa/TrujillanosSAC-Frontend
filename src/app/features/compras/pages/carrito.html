@@ -1,0 +1,17 @@
+<header class="page-heading"><div><p class="eyebrow">GESTIÓN DE ABASTECIMIENTO</p><h1>Carrito de compra</h1><p>Reúne los insumos necesarios y envía una solicitud al proveedor.</p></div></header>
+@if(error()){<div class="notice error" role="alert">{{error()}} <button class="button secondary small" (click)="cargar()">Reintentar</button></div>}
+@if(success()){<div class="notice success" role="status"><app-icon name="check"/>{{success()}}</div>}
+<div class="summary-grid"><article class="summary-card"><span class="summary-icon"><app-icon name="stock"/></span><div><strong>{{carrito().length}}</strong><p>Insumos seleccionados</p></div></article><article class="summary-card"><span class="summary-icon"><app-icon name="movement"/></span><div><strong>{{totalUnidades()|numero}}</strong><p>Unidades solicitadas</p></div></article><article class="summary-card"><span class="summary-icon"><app-icon name="file"/></span><div><strong>{{proveedores().length}}</strong><p>Proveedores disponibles</p></div></article></div>
+<section class="purchase-grid">
+  <div class="table-card"><div class="purchase-panel-heading"><div><h2>Insumos disponibles</h2><p>Selecciona los artículos que necesitas reponer.</p></div><label class="search-input"><app-icon name="search"/><input type="search" aria-label="Buscar insumo" placeholder="Buscar insumo…" [ngModel]="buscar()" (ngModelChange)="buscar.set($event)"></label></div>
+    <div class="table-scroll"><table><thead><tr><th>Insumo</th><th>Stock</th><th>Unidad</th><th></th></tr></thead><tbody>
+      @if(loading()){<tr><td colspan="4" class="loading-row"><span class="spinner"></span>Cargando insumos…</td></tr>}
+      @else{@for(item of filtrados();track item.id){<tr><td><strong>{{item.nombre}}</strong><small class="unit">{{item.almacen}}</small></td><td>{{item.stock|numero}}</td><td>{{item.unidad}}</td><td><button class="button secondary small" (click)="agregar(item)"><app-icon name="plus"/>Agregar</button></td></tr>}@empty{<tr><td colspan="4"><div class="empty-state"><h3>No hay insumos disponibles</h3><p>Los insumos activos aparecerán aquí.</p></div></td></tr>}}</tbody></table></div>
+  </div>
+  <aside class="table-card cart-card"><div class="purchase-panel-heading"><div><h2>Tu solicitud</h2><p>{{carrito().length}} insumos en el carrito</p></div></div>
+    @if(carrito().length){<div class="cart-lines">@for(line of carrito();track line.id){<div class="cart-line"><div class="cart-line-title"><strong>{{line.nombre}}</strong><button class="icon-button" [attr.aria-label]="'Quitar '+line.nombre" (click)="quitar(line.id)"><app-icon name="close"/></button></div><small>Stock: {{line.stock|numero}} {{line.unidad}}</small><label>CANTIDAD<input type="number" min="0.01" step="0.01" [ngModel]="line.cantidad" (ngModelChange)="cantidad(line.id,$event)"></label></div>}</div>
+      <label class="cart-provider">PROVEEDOR<select name="proveedor" [(ngModel)]="proveedor" required><option [ngValue]="0">Selecciona un proveedor</option>@for(p of proveedores();track p.id){<option [ngValue]="p.id">{{p.nombre}}</option>}</select></label>
+      <button class="button primary cart-submit" [disabled]="busy()" (click)="registrar()">{{busy()?'Enviando solicitud…':'Enviar solicitud'}}</button>
+    }@else{<div class="empty-state cart-empty"><app-icon name="stock"/><h3>Tu carrito está vacío</h3><p>Agrega insumos desde el catálogo para preparar una solicitud.</p></div>}
+  </aside>
+</section>

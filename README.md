@@ -11,6 +11,7 @@ Aplicación Angular 22, con organización basada en [pharma-frontend](https://gi
 - Alertas: niveles bajos y sobrestock, historial de alertas resueltas y revisión manual de niveles.
 - Notificaciones propias del jefe de compras, con marcado de lectura.
 - Solicitudes de reposición: selección manual o llenado con insumos faltantes, cantidades editables, proveedor y envío al módulo de compras.
+- Compras: carrito de insumos, solicitudes, revisión de cotizaciones y órdenes de compra con detalle y registro de pago.
 - Sesión con usuario/contraseña, menú según permisos y cierre de sesión.
 
 Los datos mostrados provienen del backend. Los ejemplos con Tetin POP y otros productos pertenecen exclusivamente a la vista previa H2 descrita abajo.
@@ -25,7 +26,10 @@ src/app/features/auth         login y acceso restringido
 src/app/features/inventario
   components                  formularios y comprobantes
   pages                       catálogo, stock, movimientos, alertas y solicitudes
+src/app/features/compras      carrito, cotizaciones, órdenes y cliente de compras
 ```
+
+Cotizaciones y órdenes usan los controladores REST del backend: `GET /cotizaciones`, `PATCH /cotizaciones/{id}/aceptar`, `PATCH /cotizaciones/{id}/rechazar`, `POST /ordenes`, `GET /ordenes`, `GET /comprobantes`, `GET /pagos` y `POST /pagos`. Para registrar un pago se envían comprobante, monto, fecha e ID del método. Los métodos Efectivo (1) y Yape (2) corresponden al catálogo inicial de `database/oracle/02_catalogos.sql`. El carrito y las solicitudes usan los endpoints REST existentes de inventario.
 
 ## Desarrollo
 
@@ -34,7 +38,7 @@ Requiere Node compatible con Angular 22 (se verificó con Node 24.21) y JDK 21 o
 1. Para una base nueva, seguir `database/oracle/README.md`. Para una existente, aplicar las migraciones pendientes V1, V2 y V3. Configurar `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
 2. Iniciar el backend desde la raíz con `./mvnw.cmd spring-boot:run`.
 3. En `frontend/`, ejecutar `npm ci` y `npm start`.
-4. Abrir `http://localhost:4200`. El proxy dirige `/api`, `/img` y `/uploads` al backend en `localhost:9191`.
+4. Abrir `http://localhost:4200`. El proxy configurado en Angular dirige `/api`, `/img` y `/uploads` al backend en `localhost:8080` (perfil `dev`), tanto con `ng serve` como con `npm start`. Las rutas antiguas del panel se normalizan a rutas Angular para mantener el shell SPA.
 
 El frontend utiliza la sesión del servidor y CSRF; no guarda contraseñas ni tokens en localStorage/sessionStorage. Las rutas usan hash para poder servir la compilación como recursos estáticos de Spring sin reescrituras del servidor.
 

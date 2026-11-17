@@ -17,6 +17,8 @@ export class AuthService {
     return this.consulta;
   }
   async login(username:string,password:string):Promise<Sesion> {
+    sessionStorage.removeItem('trujillanos.compras.jwt');
+    sessionStorage.removeItem('trujillanos.compras.jwt.expiresAt');
     await this.api.get('/csrf');
     const sesion=await this.api.post<Sesion>('/sesion/login',{username,password});
     this.sesion.set(sesion);
@@ -24,15 +26,17 @@ export class AuthService {
     return sesion;
   }
   async logout():Promise<void> {
+    sessionStorage.removeItem('trujillanos.compras.jwt');
+    sessionStorage.removeItem('trujillanos.compras.jwt.expiresAt');
     await this.api.get('/csrf');
     await this.api.post('/sesion/logout',{});
     this.sesion.set(null);
   }
 }
-export const authGuard:CanActivateFn=async () => {
+export const authGuard:CanActivateFn=async (_route,state) => {
   const auth=inject(AuthService),router=inject(Router);
   const sesion=await auth.cargar();
-  if(!sesion) { window.location.assign('/login'); return false; }
+  if(!sesion) return router.createUrlTree(['/login'],{queryParams:{returnUrl:state.url}});
   if(!sesion.inventario && !sesion.compras) return router.createUrlTree(['/sin-acceso']);
   return true;
 };
@@ -43,11 +47,11 @@ export const permisoGuard:CanActivateFn=async route => {
 };
 
 export const sesionInterceptor:HttpInterceptorFn=(request,next)=>{
-  const store=inject(SesionStore);
+  const store=inject(SesionStore),router=inject(Router);
   return next(request).pipe(catchError(error=>{
     if(error instanceof HttpErrorResponse && error.status===401 && request.url.startsWith(API)){
       store.sesion.set(null);
-      if(!request.url.endsWith('/sesion/login')&&!request.url.endsWith('/sesion'))window.location.assign('/login');
+      if(!request.url.endsWith('/sesion/login')&&!request.url.endsWith('/sesion'))void router.navigateByUrl('/login');
     }
     return throwError(()=>error);
   }));
