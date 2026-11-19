@@ -51,7 +51,7 @@ export class CarritoPage {
   async registrar() {
     const lines = this.carrito();
     if (!this.proveedor) { this.error.set('Selecciona un proveedor para enviar la solicitud.'); return; }
-    if (!lines.length || lines.some(l => !Number.isFinite(l.cantidad) || l.cantidad <= 0)) { this.error.set('Agrega insumos e indica cantidades mayores que cero.'); return; }
+    if (!lines.length || lines.some(l => !Number.isInteger(l.cantidad) || l.cantidad <= 0)) { this.error.set('Agrega insumos e indica cantidades enteras mayores que cero.'); return; }
     this.busy.set(true); this.error.set(''); this.success.set('');
     try {
       const solicitud = await this.api.post<Solicitud>('/solicitudes-compra', { idProveedor: Number(this.proveedor), detalles: lines.map(l => ({ idInsumo: l.id, cantidad: l.cantidad })) });
