@@ -59,6 +59,21 @@ export class ComprasApi {
     await firstValueFrom(this.http.post(`${this.base}/comprobantes/factura`, form, this.options()));
   }
 
+  async descargarFactura(comprobanteId: number, numeroFactura?: string | null): Promise<void> {
+    const archivo = await firstValueFrom(this.http.get(
+      `${this.base}/comprobantes/${comprobanteId}/archivo`,
+      { ...this.options(), responseType: 'blob' },
+    ));
+    const url = URL.createObjectURL(archivo);
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = `${(numeroFactura || `factura-${comprobanteId}`).replace(/[^a-zA-Z0-9._-]/g, '_')}.pdf`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    URL.revokeObjectURL(url);
+  }
+
   private options() {
     const token = this.tieneSesion() ? sessionStorage.getItem(this.tokenKey) : null;
     return {
@@ -107,7 +122,7 @@ export interface OrdenCompraResponse {
   detalles: { id: number; insumoId: number; insumoNombre: string; unidadMedida: string; cantidad: number; precioUnitario: number; subtotal: number }[];
 }
 
-export interface ComprobanteCompra { id: number; fechaEmision: string; monto: number; estado: string; ordenCompraId: number }
+export interface ComprobanteCompra { id: number; fechaEmision: string; monto: number; estado: string; ordenCompraId: number; numeroFactura?: string | null }
 export interface SolicitudProveedor { id: number; fecha: string; estado: string; insumos: { id: number; nombre: string; cantidad: number; unidad: string }[] }
 export interface OrdenProveedor { id: number; fecha: string; cotizacionId: number; total: number; estado: string; factura: { id: number; numero: string; fecha: string; monto: number; estado: string } | null }
 export interface PagoCompra { id: number; monto: number; fechaPago: string; comprobanteId: number; metodoPagoId: number; metodoPago: string }
@@ -123,6 +138,7 @@ export interface OrdenCompra {
   qrPagoUrl: string;
   pagada: boolean;
   comprobanteId: number | null;
+  comprobante: ComprobanteCompra | null;
   totalPagado: number;
   saldoPendiente: number;
   detalles: { insumo: string; cantidad: number; unidad: string; precioUnitario: number; subtotal: number }[];

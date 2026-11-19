@@ -10,7 +10,8 @@ import { Dialog } from '../../../shared/dialog';
 export class CotizacionesPage {
   private readonly api = inject(ComprasApi);
   readonly data = signal<CotizacionCompra[]>([]); readonly loading = signal(true); readonly busyId = signal<number|null>(null);
-  readonly error = signal(''); readonly success = signal(''); readonly buscar = signal(''); readonly detalle = signal<CotizacionCompra|null>(null);
+  readonly error = signal(''); readonly success = signal(''); readonly buscar = signal(''); readonly detalle = signal<CotizacionCompra|null>(null); readonly ordenGenerada = signal<CotizacionCompra|null>(null);
+  readonly accionPendiente = signal<{ cotizacion: CotizacionCompra; accion: 'generar-orden'|'rechazar' }|null>(null);
   readonly filtradas = computed(() => this.data().filter(c => (c.codigo+' '+c.solicitud+' '+c.proveedor+' '+c.estado).toLowerCase().includes(this.buscar().trim().toLowerCase())));
   readonly pendientes = computed(() => this.data().filter(c => !c.tieneOrden && c.estado.toLowerCase() !== 'rechazada').length);
   constructor() { void this.cargar(); }
@@ -32,8 +33,6 @@ export class CotizacionesPage {
   }
   async responder(c: CotizacionCompra, accion: 'generar-orden'|'rechazar') {
     if (this.busyId() !== null) return;
-    const prompt = accion === 'generar-orden' ? `¿Generar una orden de compra por S/ ${c.monto.toFixed(2)} para ${c.proveedor}?` : `¿Rechazar la cotización ${c.codigo}?`;
-    if (!window.confirm(prompt)) return;
     this.busyId.set(c.idCotizacion); this.error.set(''); this.success.set('');
     try {
       if (accion === 'rechazar') await this.api.patch(`/cotizaciones/${c.idCotizacion}/rechazar`);
@@ -41,7 +40,18 @@ export class CotizacionesPage {
         if (c.estado.toLowerCase() !== 'aceptada') await this.api.patch(`/cotizaciones/${c.idCotizacion}/aceptar`);
         await this.api.post('/ordenes', { cotizacionId: c.idCotizacion, descripcion: `Orden generada desde ${c.codigo}` });
       }
-      this.success.set(accion === 'generar-orden' ? `Orden generada desde ${c.codigo}.` : `Cotización ${c.codigo} rechazada.`); await this.cargar();
+      if (accion === 'generar-orden') this.ordenGenerada.set(c);
+      else this.success.set(`Cotización ${c.codigo} rechazada.`);
+      await this.cargar();
     } catch(e) { this.error.set(mensajeError(e)); if (accion === 'generar-orden') await this.cargar(); } finally { this.busyId.set(null); }
+  }
+  pedirConfirmacion(cotizacion: CotizacionCompra, accion: 'generar-orden'|'rechazar') {
+    this.accionPendiente.set({ cotizacion, accion });
+  }
+  async confirmarAccion() {
+    const pendiente = this.accionPendiente();
+    if (!pendiente || this.busyId() !== null) return;
+    this.accionPendiente.set(null);
+    await this.responder(pendiente.cotizacion, pendiente.accion);
   }
 }
