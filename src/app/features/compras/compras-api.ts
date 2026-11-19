@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 /** Cliente de los controladores REST de compras del backend. */
@@ -44,8 +44,12 @@ export class ComprasApi {
 
   nombreUsuario(): string { return sessionStorage.getItem(this.usernameKey) ?? 'Proveedor'; }
 
-  async solicitudesProveedor(): Promise<SolicitudProveedor[]> { return this.get('/proveedor/solicitudes'); }
-  async ordenesProveedor(): Promise<OrdenProveedor[]> { return this.get('/proveedor/ordenes'); }
+  async solicitudesProveedor(query: Record<string, unknown> = {}): Promise<PaginaCompras<SolicitudProveedor>> { return this.get('/proveedor/solicitudes', query); }
+  async solicitudProveedor(id: number): Promise<SolicitudProveedor> { return this.get(`/proveedor/solicitudes/${id}`); }
+  async ordenesProveedor(cotizacionIds: number[] = []): Promise<OrdenProveedor[]> {
+    return this.get('/proveedor/ordenes', cotizacionIds.length ? { cotizacionIds: cotizacionIds.join(',') } : {});
+  }
+  async resumenCotizacionesProveedor(): Promise<CotizacionesResumen> { return this.get('/cotizaciones/mias/resumen'); }
   async enviarCotizacion(solicitudId: number, fechaEntrega: string, detalles: { insumoId: number; cantidad: number; precioUnitario: number }[], descripcion?: string): Promise<CotizacionResponse> {
     return this.post('/cotizaciones', { solicitudId, fechaEntrega, detalles, descripcion });
   }
@@ -59,6 +63,21 @@ export class ComprasApi {
     await firstValueFrom(this.http.post(`${this.base}/comprobantes/factura`, form, this.options()));
   }
 
+  async descargarFactura(comprobanteId: number, numeroFactura?: string | null): Promise<void> {
+    const archivo = await firstValueFrom(this.http.get(
+      `${this.base}/comprobantes/${comprobanteId}/archivo`,
+      { ...this.options(), responseType: 'blob' },
+    ));
+    const url = URL.createObjectURL(archivo);
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = `${(numeroFactura || `factura-${comprobanteId}`).replace(/[^a-zA-Z0-9._-]/g, '_')}.pdf`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    URL.revokeObjectURL(url);
+  }
+
   private options() {
     const token = this.tieneSesion() ? sessionStorage.getItem(this.tokenKey) : null;
     return {
@@ -67,8 +86,12 @@ export class ComprasApi {
     };
   }
 
-  get<T>(path: string): Promise<T> {
-    return firstValueFrom(this.http.get<T>(this.base + path, this.options()));
+  get<T>(path: string, query: Record<string, unknown> = {}): Promise<T> {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== null && value !== undefined && value !== '') params = params.set(key, String(value));
+    }
+    return firstValueFrom(this.http.get<T>(this.base + path, { ...this.options(), params }));
   }
   post<T>(path: string, body: unknown = {}): Promise<T> {
     return firstValueFrom(this.http.post<T>(this.base + path, body, this.options()));
@@ -82,10 +105,18 @@ export interface ComprasLoginResponse {
   token: string; tipo: 'Bearer'; expiraEnSegundos: number; username: string; roles: string[]; permisos: string[];
 }
 
+export interface PaginaCompras<T> {
+  contenido: T[]; pagina: number; tamanio: number; totalElementos: number; totalPaginas: number; ultima: boolean;
+}
+
+export interface CotizacionesResumen { total: number; pendientes: number; aprobadas: number }
+export interface OrdenesResumen { total: number; pendientes: number; montoPendiente: number }
+
 export interface CotizacionResponse {
   id: number; fechaCotizacion: string; fechaEntrega: string; estado: string;
   solicitudId: number; proveedorId: number; proveedorNombre: string; monto: number;
   detalles: { id: number; insumoId: number; insumoNombre: string; unidadMedida: string; cantidad: number; precioUnitario: number; subtotal: number }[];
+  tieneOrden: boolean;
 }
 
 export interface CotizacionCompra {
@@ -107,7 +138,11 @@ export interface OrdenCompraResponse {
   detalles: { id: number; insumoId: number; insumoNombre: string; unidadMedida: string; cantidad: number; precioUnitario: number; subtotal: number }[];
 }
 
-export interface ComprobanteCompra { id: number; fechaEmision: string; monto: number; estado: string; ordenCompraId: number }
+export interface OrdenCompraListadoResponse extends OrdenCompraResponse {
+  comprobante: ComprobanteCompra | null; totalPagado: number; saldoPendiente: number;
+}
+
+export interface ComprobanteCompra { id: number; fechaEmision: string; monto: number; estado: string; ordenCompraId: number; numeroFactura?: string | null }
 export interface SolicitudProveedor { id: number; fecha: string; estado: string; insumos: { id: number; nombre: string; cantidad: number; unidad: string }[] }
 export interface OrdenProveedor { id: number; fecha: string; cotizacionId: number; total: number; estado: string; factura: { id: number; numero: string; fecha: string; monto: number; estado: string } | null }
 export interface PagoCompra { id: number; monto: number; fechaPago: string; comprobanteId: number; metodoPagoId: number; metodoPago: string }
@@ -123,6 +158,7 @@ export interface OrdenCompra {
   qrPagoUrl: string;
   pagada: boolean;
   comprobanteId: number | null;
+  comprobante: ComprobanteCompra | null;
   totalPagado: number;
   saldoPendiente: number;
   detalles: { insumo: string; cantidad: number; unidad: string; precioUnitario: number; subtotal: number }[];
