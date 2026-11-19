@@ -1,46 +1,53 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ComprasApi, ComprobanteCompra, OrdenCompra, OrdenCompraResponse, PagoCompra } from '../compras-api';
+import { ComprasApi, OrdenCompra, OrdenCompraListadoResponse, OrdenesResumen } from '../compras-api';
 import { mensajeError } from '../../../core/api';
 import { Icon } from '../../../shared/icon';
 import { FechaPipe, NumeroPipe } from '../../../shared/format';
 import { Dialog } from '../../../shared/dialog';
+import { Pager } from '../../../shared/pager';
 
-@Component({ imports: [FormsModule, Icon, FechaPipe, NumeroPipe, Dialog], templateUrl: './ordenes.html' })
+@Component({ imports: [FormsModule, Icon, FechaPipe, NumeroPipe, Dialog, Pager], templateUrl: './ordenes.html' })
 export class OrdenesPage {
   private readonly api = inject(ComprasApi);
   readonly data = signal<OrdenCompra[]>([]); readonly loading = signal(true); readonly busy = signal(false);
   readonly error = signal(''); readonly buscar = signal('');
   readonly detalle = signal<OrdenCompra|null>(null); readonly confirmarRecepcion = signal<OrdenCompra|null>(null);
   readonly completada = signal<OrdenCompra|null>(null); readonly enviandoPago = signal(false);
-  readonly filtradas = computed(() => this.data().filter(o => (o.codigoOrden+' '+o.proveedor+' '+o.estado).toLowerCase().includes(this.buscar().trim().toLowerCase())));
-  readonly pendientes = computed(() => this.data().filter(o => o.saldoPendiente > 0).length);
-  readonly totalPendiente = computed(() => this.data().reduce((sum,o) => sum+o.saldoPendiente,0));
+  readonly pagina = signal(0); readonly tamanio = 10; readonly totalRegistros = signal(0); readonly paginas = signal(0);
+  readonly pendientes = signal(0); readonly totalPendiente = signal(0);
+  private secuencia = 0; private temporizadorBusqueda?: ReturnType<typeof setTimeout>;
   constructor() { void this.cargar(); }
-  async cargar() {
-    this.loading.set(true); this.error.set('');
+  cambiarBusqueda(valor: string) {
+    this.buscar.set(valor);
+    if (this.temporizadorBusqueda) clearTimeout(this.temporizadorBusqueda);
+    this.temporizadorBusqueda = setTimeout(() => void this.cargar(0), 300);
+  }
+  async cargar(pagina = this.pagina()) {
+    const secuencia = ++this.secuencia;
+    this.pagina.set(pagina); this.loading.set(true); this.error.set('');
     try {
-      const [ordenes, comprobantes, pagos] = await Promise.all([
-        this.api.get<OrdenCompraResponse[]>('/ordenes'),
-        this.api.get<ComprobanteCompra[]>('/comprobantes'),
-        this.api.get<PagoCompra[]>('/pagos')
+      const [resultado, resumen] = await Promise.all([
+        this.api.get<import('../compras-api').PaginaCompras<OrdenCompraListadoResponse>>('/ordenes', {
+          pagina, tamanio: this.tamanio, buscar: this.buscar(),
+        }),
+        this.api.get<OrdenesResumen>('/ordenes/resumen')
       ]);
-      const comprobantePorOrden = new Map(comprobantes.map(c => [c.ordenCompraId, c]));
-      const pagadoPorComprobante = new Map<number, number>();
-      for (const pago of pagos) pagadoPorComprobante.set(pago.comprobanteId, (pagadoPorComprobante.get(pago.comprobanteId) ?? 0) + pago.monto);
-      this.data.set(ordenes.map(o => {
-        const comprobante = comprobantePorOrden.get(o.id);
-        const totalPagado = comprobante ? (pagadoPorComprobante.get(comprobante.id) ?? 0) : 0;
-        const saldoPendiente = Math.max(0, o.total-totalPagado);
+      if (secuencia !== this.secuencia) return;
+      this.totalRegistros.set(resultado.totalElementos); this.paginas.set(resultado.totalPaginas);
+      this.pendientes.set(resumen.pendientes); this.totalPendiente.set(resumen.montoPendiente);
+      this.data.set(resultado.contenido.map(o => {
+        const saldoPendiente = o.saldoPendiente;
         return {
           idOrden:o.id, codigoOrden:`OR_${String(o.id).padStart(2,'0')}`, fechaEmision:o.fechaEmision,
-          proveedor:o.proveedorNombre, estado: saldoPendiente === 0 ? 'Pagado' : comprobante ? 'Pendiente de pago' : 'Esperando comprobante',
-          total:o.total, descripcion:o.descripcion, qrPagoUrl:'', pagada:saldoPendiente===0, comprobante: comprobante ?? null,
-          comprobanteId:comprobante?.id ?? null, totalPagado, saldoPendiente,
+          proveedor:o.proveedorNombre, estado: saldoPendiente === 0 ? 'Pagado' : o.comprobante ? 'Pendiente de pago' : 'Esperando comprobante',
+          total:o.total, descripcion:o.descripcion, qrPagoUrl:'', pagada:saldoPendiente===0, comprobante: o.comprobante,
+          comprobanteId:o.comprobante?.id ?? null, totalPagado:o.totalPagado, saldoPendiente,
           detalles:o.detalles.map(d=>({insumo:d.insumoNombre,cantidad:d.cantidad,unidad:d.unidadMedida,precioUnitario:d.precioUnitario,subtotal:d.subtotal}))
         };
       }));
-    } catch(e) { this.error.set(mensajeError(e)); } finally { this.loading.set(false); }
+    } catch(e) { if (secuencia === this.secuencia) this.error.set(mensajeError(e)); }
+    finally { if (secuencia === this.secuencia) this.loading.set(false); }
   }
   async confirmarPagoEnEfectivo() {
     const orden = this.confirmarRecepcion();

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 /** Cliente de los controladores REST de compras del backend. */
@@ -44,8 +44,12 @@ export class ComprasApi {
 
   nombreUsuario(): string { return sessionStorage.getItem(this.usernameKey) ?? 'Proveedor'; }
 
-  async solicitudesProveedor(): Promise<SolicitudProveedor[]> { return this.get('/proveedor/solicitudes'); }
-  async ordenesProveedor(): Promise<OrdenProveedor[]> { return this.get('/proveedor/ordenes'); }
+  async solicitudesProveedor(query: Record<string, unknown> = {}): Promise<PaginaCompras<SolicitudProveedor>> { return this.get('/proveedor/solicitudes', query); }
+  async solicitudProveedor(id: number): Promise<SolicitudProveedor> { return this.get(`/proveedor/solicitudes/${id}`); }
+  async ordenesProveedor(cotizacionIds: number[] = []): Promise<OrdenProveedor[]> {
+    return this.get('/proveedor/ordenes', cotizacionIds.length ? { cotizacionIds: cotizacionIds.join(',') } : {});
+  }
+  async resumenCotizacionesProveedor(): Promise<CotizacionesResumen> { return this.get('/cotizaciones/mias/resumen'); }
   async enviarCotizacion(solicitudId: number, fechaEntrega: string, detalles: { insumoId: number; cantidad: number; precioUnitario: number }[], descripcion?: string): Promise<CotizacionResponse> {
     return this.post('/cotizaciones', { solicitudId, fechaEntrega, detalles, descripcion });
   }
@@ -82,8 +86,12 @@ export class ComprasApi {
     };
   }
 
-  get<T>(path: string): Promise<T> {
-    return firstValueFrom(this.http.get<T>(this.base + path, this.options()));
+  get<T>(path: string, query: Record<string, unknown> = {}): Promise<T> {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== null && value !== undefined && value !== '') params = params.set(key, String(value));
+    }
+    return firstValueFrom(this.http.get<T>(this.base + path, { ...this.options(), params }));
   }
   post<T>(path: string, body: unknown = {}): Promise<T> {
     return firstValueFrom(this.http.post<T>(this.base + path, body, this.options()));
@@ -97,10 +105,18 @@ export interface ComprasLoginResponse {
   token: string; tipo: 'Bearer'; expiraEnSegundos: number; username: string; roles: string[]; permisos: string[];
 }
 
+export interface PaginaCompras<T> {
+  contenido: T[]; pagina: number; tamanio: number; totalElementos: number; totalPaginas: number; ultima: boolean;
+}
+
+export interface CotizacionesResumen { total: number; pendientes: number; aprobadas: number }
+export interface OrdenesResumen { total: number; pendientes: number; montoPendiente: number }
+
 export interface CotizacionResponse {
   id: number; fechaCotizacion: string; fechaEntrega: string; estado: string;
   solicitudId: number; proveedorId: number; proveedorNombre: string; monto: number;
   detalles: { id: number; insumoId: number; insumoNombre: string; unidadMedida: string; cantidad: number; precioUnitario: number; subtotal: number }[];
+  tieneOrden: boolean;
 }
 
 export interface CotizacionCompra {
@@ -120,6 +136,10 @@ export interface OrdenCompraResponse {
   id: number; fechaEmision: string; descripcion: string; cotizacionId: number;
   proveedorNombre: string; total: number;
   detalles: { id: number; insumoId: number; insumoNombre: string; unidadMedida: string; cantidad: number; precioUnitario: number; subtotal: number }[];
+}
+
+export interface OrdenCompraListadoResponse extends OrdenCompraResponse {
+  comprobante: ComprobanteCompra | null; totalPagado: number; saldoPendiente: number;
 }
 
 export interface ComprobanteCompra { id: number; fechaEmision: string; monto: number; estado: string; ordenCompraId: number; numeroFactura?: string | null }
