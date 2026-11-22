@@ -53,7 +53,7 @@ export class Login {
     const url = this.returnUrl();
     // Un proveedor siempre entra a su portal; no tiene tienda ni intranet.
     if (this.auth.esProveedor()) {
-      return url?.startsWith('/proveedor') ? url : '/proveedor/solicitudes';
+      return url?.startsWith('/proveedor') ? url : '/proveedor';
     }
     // El empleado siempre entra por la tienda; a la intranet llega con el botón "Intranet" de la cabecera.
     if (this.auth.esEmpleado() && url?.startsWith('/intranet')) return '/catalogo';

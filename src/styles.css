@@ -18,3 +18,6 @@ input,select,textarea{border:1px solid #cbd1dc;border-radius:7px;padding:10px 12
 @media print{body>*{visibility:hidden}app-dialog,app-dialog *{visibility:visible}.modal{position:absolute;inset:0;margin:0;max-height:none;width:100%;box-shadow:none}.modal::backdrop{background:white}.modal-header .close,.modal-footer{display:none}.modal-body{padding:24px}.sidebar,.topbar{display:none}.workspace{margin:0}}
 
 .modal-footer>[dialog-footer]{display:flex;justify-content:flex-end;gap:12px;width:100%}.field-help{color:#7d8796;font-size:10px;line-height:1.6}
+
+/* Barra de filtros con etiquetas (Movimientos): todos los controles quedan alineados por abajo. */
+.toolbar.toolbar--filtros{align-items:flex-end}.toolbar--filtros .filter-field{display:flex;flex-direction:column;gap:5px}
