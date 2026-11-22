@@ -1,0 +1,180 @@
+.volver {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.volver:hover {
+  text-decoration: underline;
+}
+
+.detalle {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+@media (min-width: 860px) {
+  .detalle {
+    grid-template-columns: 1.1fr 1fr;
+    padding: 2rem;
+  }
+}
+
+.detalle__imagen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--celeste);
+  border-radius: var(--radio);
+}
+
+.detalle__imagen img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detalle__inicial {
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--azul);
+}
+
+.detalle__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.detalle__info h1 {
+  font-size: var(--t4);
+}
+
+.detalle__etiqueta {
+  font-size: var(--t-1);
+  color: var(--texto-suave);
+}
+
+.detalle__descripcion {
+  line-height: 1.6;
+}
+
+.detalle__precio {
+  width: 100%;
+  padding-block: 0.75rem;
+  border-block: 1px solid var(--borde);
+}
+
+.detalle__precio .precio {
+  font-size: var(--t4);
+}
+
+.detalle__stock {
+  font-size: var(--t-1);
+  font-weight: 600;
+  color: var(--exito);
+}
+
+.detalle__stock--poco {
+  color: var(--error);
+}
+
+.detalle__compra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.cantidad {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #cbd1dc;
+  border-radius: var(--radio-chico);
+}
+
+.cantidad button {
+  width: 44px;
+  height: 44px;
+  font: inherit;
+  font-size: var(--t2);
+  color: var(--azul);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.cantidad button:hover:not(:disabled) {
+  background: var(--celeste);
+}
+
+.cantidad button:disabled {
+  color: var(--texto-suave);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cantidad output {
+  min-width: 3rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.detalle__aviso {
+  min-height: 1.5em;
+  font-weight: 600;
+  color: var(--exito);
+}
+
+.presentaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.presentaciones__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.presentacion {
+  display: flex;
+  flex-direction: column;
+  min-width: 7.5rem;
+  padding: 0.55rem 1rem;
+  color: var(--marino);
+  text-decoration: none;
+  background: var(--superficie);
+  border: 1px solid #cbd1dc;
+  border-radius: var(--radio-chico);
+}
+
+.presentacion:hover {
+  border-color: var(--lila);
+}
+
+.presentacion[aria-current='true'] {
+  background: var(--celeste);
+  border-color: var(--azul);
+}
+
+.presentacion span {
+  font-size: var(--t-1);
+  color: var(--texto-suave);
+}

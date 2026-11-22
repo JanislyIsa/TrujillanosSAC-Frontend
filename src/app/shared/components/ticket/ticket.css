@@ -1,0 +1,246 @@
+/*
+ * Dos presentaciones del mismo comprobante:
+ * - .comprobante: tarjeta para la pantalla (diseño del profesor).
+ * - .ticket: 80 mm ≈ 302 px, solo se ve al imprimir y usa una página con nombre (@page ticket).
+ */
+:host {
+  display: block;
+}
+
+.ticket {
+  width: 302px;
+  max-width: 100%;
+  padding: 16px 14px;
+  margin: 0 auto;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #000;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  box-shadow: var(--sombra);
+  page: ticket;
+  display: none;
+}
+
+.ticket p,
+.ticket dl,
+.ticket ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket__cabecera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.ticket__negocio {
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.ticket__linea {
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px dashed #000;
+}
+
+.ticket__titulo {
+  font-weight: 700;
+  text-align: center;
+}
+
+.ticket__datos div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ticket__datos dt::after {
+  content: ':';
+}
+
+.ticket__datos dd {
+  margin: 0;
+  text-align: right;
+}
+
+.ticket__operacion {
+  overflow-wrap: anywhere;
+}
+
+.ticket__items li + li {
+  margin-top: 6px;
+}
+
+.ticket__fila {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.ticket__fila > span:last-child {
+  white-space: nowrap;
+}
+
+.ticket__puntos {
+  flex: 1;
+  min-width: 8px;
+  border-bottom: 1px dotted #000;
+}
+
+.ticket__detalle,
+.ticket__resumen {
+  font-size: 11px;
+}
+
+.ticket__resumen {
+  margin-top: 6px;
+}
+
+.ticket__total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ticket__pie {
+  text-align: center;
+}
+
+.ticket__leyenda {
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+/* ---------- Pantalla: tarjeta ---------- */
+.comprobante {
+  max-width: 1400px;
+  padding: 1.5rem;
+  margin: 0 auto;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.comprobante__cabecera {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px solid #f2a900;
+}
+
+.comprobante__cabecera div {
+  display: grid;
+  gap: 2px;
+}
+
+.comprobante__marca {
+  font-size: var(--t2);
+  color: var(--marino);
+}
+
+.comprobante__numero {
+  text-align: right;
+}
+
+.comprobante__numero strong {
+  font-size: var(--t1);
+}
+
+.comprobante__datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.comprobante__datos dt {
+  font-size: var(--t-1);
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.comprobante__datos dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+}
+
+.comprobante__operacion {
+  overflow-wrap: anywhere;
+}
+
+/* En pantallas angostas la tabla se desplaza horizontalmente en vez de desbordar la tarjeta. */
+.comprobante__tabla-caja {
+  overflow-x: auto;
+}
+
+.comprobante__tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.comprobante__tabla th,
+.comprobante__tabla td {
+  padding: 0.6rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--borde);
+}
+
+.comprobante__tabla thead th {
+  font-size: var(--t-1);
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.comprobante__tabla tbody th {
+  font-weight: 600;
+}
+
+.comprobante__tabla .monto {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.comprobante__total {
+  margin: 1rem 0 0;
+  font-size: var(--t1);
+  font-weight: 700;
+  text-align: right;
+}
+
+.comprobante__pie {
+  margin-top: 1rem;
+  font-size: var(--t-1);
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.comprobante__pie p {
+  margin: 0;
+}
+
+/* ---------- Impresión: solo el ticket de 80 mm ---------- */
+@media print {
+  .comprobante {
+    display: none;
+  }
+
+  .ticket {
+    display: block;
+    width: 80mm;
+    padding: 4mm;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

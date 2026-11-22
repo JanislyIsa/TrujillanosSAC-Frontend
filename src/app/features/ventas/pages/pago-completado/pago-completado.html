@@ -1,0 +1,35 @@
+<section class="contenedor completado">
+  <header class="completado__cabecera no-imprimir">
+    <h2>¡Pago recibido!</h2>
+    <p>Pedido #{{ id() }} · Estamos preparando tus golosinas.</p>
+  </header>
+
+  @if (cargando()) {
+  <p class="vacio no-imprimir" role="status">Preparando tu comprobante…</p>
+  } @else if (error()) {
+  <div class="completado__aviso no-imprimir">
+    <p class="alerta alerta--error" role="alert">
+      Recibimos tu pago, pero no pudimos mostrar el comprobante ahora. {{ error() }}
+    </p>
+    <div class="completado__acciones">
+      <button type="button" class="boton" (click)="cargar()">Reintentar</button>
+      <a class="boton boton--secundario" [routerLink]="['/pedidos', id()]">Ver mi pedido</a>
+    </div>
+  </div>
+  } @else if (comprobante(); as c) { @if (c.cliente.correo) {
+  <p class="alerta alerta--exito completado__aviso no-imprimir" role="status">
+    Te enviamos tu comprobante de pago a
+    <strong>{{ c.cliente.correo }}</strong>. Si no lo ves en unos minutos, revisa tu carpeta de
+    spam.
+  </p>
+  }
+
+  <app-ticket [comprobante]="c" />
+
+  <div class="completado__acciones no-imprimir">
+    <button type="button" class="boton" (click)="imprimir()">Imprimir ticket</button>
+    <a class="boton boton--secundario" routerLink="/pedidos">Mis pedidos</a>
+    <a class="boton boton--secundario" routerLink="/catalogo">Seguir comprando</a>
+  </div>
+  }
+</section>

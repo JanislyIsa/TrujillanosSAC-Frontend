@@ -1,16 +1,44 @@
 import { Routes } from '@angular/router';
-import { authGuard, permisoGuard } from './core/auth';
-import { Layout } from './layout/layout';
-export const routes:Routes=[
-  {path:'sin-acceso',loadComponent:()=>import('./features/auth/sin-acceso').then(m=>m.SinAcceso)},
-  {path:'login',loadComponent:()=>import('./features/auth/login').then(m=>m.Login),title:'Iniciar sesión · El Trujillano'},
-  {path:'',component:Layout,canActivate:[authGuard],children:[
-    {path:'',pathMatch:'full',redirectTo:'inventario/stock'},
-    {path:'inventario/catalogo',canActivate:[permisoGuard],data:{permiso:'inventario'},loadComponent:()=>import('./features/inventario/pages/catalogo').then(m=>m.CatalogoPage),title:'Productos e insumos · El Trujillano'},
-    {path:'inventario/stock',loadComponent:()=>import('./features/inventario/pages/stock').then(m=>m.StockPage),title:'Control de stock · El Trujillano'},
-    {path:'inventario/movimientos',canActivate:[permisoGuard],data:{permiso:'inventario'},loadComponent:()=>import('./features/inventario/pages/movimientos').then(m=>m.MovimientosPage),title:'Movimientos · El Trujillano'},
-    {path:'inventario/alertas',loadComponent:()=>import('./features/inventario/pages/alertas').then(m=>m.AlertasPage),title:'Alertas · El Trujillano'},
-    {path:'inventario/solicitudes',canActivate:[permisoGuard],data:{permiso:'compras'},loadComponent:()=>import('./features/inventario/pages/solicitudes').then(m=>m.SolicitudesPage),title:'Solicitudes de reposición · El Trujillano'},
-  ]},
-  {path:'**',redirectTo:'inventario/stock'},
+import { empleadoGuard } from './core/auth/auth-guard';
+import { IntranetLayout } from './layout/intranet-layout/intranet-layout';
+import { MainLayout } from './layout/main-layout/main-layout';
+
+export const routes: Routes = [
+  // Intranet de empleados (inventario y, más adelante, compras y ventas). Cada módulo cuelga de /intranet/<modulo>.
+  {
+    path: 'intranet',
+    component: IntranetLayout,
+    canActivate: [empleadoGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'inventario' },
+      {
+        path: 'sin-acceso',
+        loadComponent: () =>
+          import('./features/auth/pages/sin-acceso/sin-acceso').then((m) => m.SinAcceso),
+        title: 'Acceso restringido · El Trujillano',
+      },
+      {
+        path: 'inventario',
+        loadChildren: () =>
+          import('./features/inventario/inventario.routes').then((m) => m.INVENTARIO_ROUTES),
+      },
+    ],
+  },
+  // Tienda de clientes (catálogo, carrito, pedidos) y login/registro/cuenta de todos.
+  {
+    path: '',
+    component: MainLayout,
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'catalogo' },
+      {
+        path: '',
+        loadChildren: () => import('./features/ventas/ventas.routes').then((m) => m.VENTAS_ROUTES),
+      },
+      {
+        path: '',
+        loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+      },
+    ],
+  },
+  { path: '**', redirectTo: 'catalogo' },
 ];

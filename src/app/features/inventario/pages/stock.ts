@@ -2,12 +2,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { InventarioApi,mensajeError } from '../../../core/api';
-import { AuthService } from '../../../core/auth';
+import { AuthService } from '../../../core/auth/auth-service';
 import { Catalogos,Item,Pagina } from '../../../core/models';
 import { Icon } from '../../../shared/icon';
 import { Pager } from '../../../shared/pager';
 import { codigo,estadoLabel,NumeroPipe } from '../../../shared/format';
-import { ItemDialog } from '../components/item-dialog';
+import { ItemDialog } from './item-dialog';
 @Component({imports:[FormsModule,RouterLink,Icon,Pager,NumeroPipe,ItemDialog],templateUrl:'./stock.html'})
 export class StockPage {
   readonly auth=inject(AuthService);private readonly api=inject(InventarioApi);

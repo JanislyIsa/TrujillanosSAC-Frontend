@@ -1,7 +1,7 @@
 import { Component,inject,signal } from '@angular/core';import { FormsModule } from '@angular/forms';
 import { InventarioApi,mensajeError } from '../../../core/api';import { Comprobante,Movimiento,Pagina } from '../../../core/models';
 import { Icon } from '../../../shared/icon';import { Pager } from '../../../shared/pager';import { FechaPipe,NumeroPipe } from '../../../shared/format';
-import { MovimientoForm } from '../components/movimiento-form';import { ComprobanteDialog } from '../components/comprobante';
+import { MovimientoForm } from './movimiento-form';import { ComprobanteDialog } from './comprobante';
 @Component({imports:[FormsModule,Icon,Pager,FechaPipe,NumeroPipe,MovimientoForm,ComprobanteDialog],templateUrl:'./movimientos.html'})
 export class MovimientosPage{
   private readonly api=inject(InventarioApi);readonly data=signal<Pagina<Movimiento>|null>(null);readonly busy=signal(false);readonly error=signal('');readonly success=signal('');

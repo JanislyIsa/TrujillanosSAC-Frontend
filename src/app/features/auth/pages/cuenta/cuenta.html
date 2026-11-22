@@ -1,0 +1,67 @@
+<section class="contenedor cuenta">
+  <h1>Mi cuenta</h1>
+
+  @if (sesion(); as s) {
+    <div class="cuenta__tarjeta">
+      <div class="cuenta__avatar" aria-hidden="true">{{ s.nombreCompleto.charAt(0) }}</div>
+      <dl class="cuenta__datos">
+        <div>
+          <dt>Nombre</dt>
+          <dd>{{ s.nombreCompleto }}</dd>
+        </div>
+        <div>
+          <dt>Usuario</dt>
+          <dd>{{ s.username }}</dd>
+        </div>
+      </dl>
+      <button type="button" class="boton boton--secundario cuenta__salir" (click)="cerrarSesion()">Cerrar sesión</button>
+    </div>
+
+    <div class="cuenta__acciones">
+      <a routerLink="/pedidos" class="boton">Mis pedidos</a>
+    </div>
+
+    <section class="cuenta__seguridad" aria-labelledby="seguridad-titulo">
+      <h2 id="seguridad-titulo">Cambiar contraseña</h2>
+
+      <form [formGroup]="form" (ngSubmit)="cambiarClave()" novalidate>
+        <div class="campo">
+          <label for="claveActual">Contraseña actual</label>
+          <input id="claveActual" formControlName="claveActual" [type]="verClave() ? 'text' : 'password'" autocomplete="current-password" [attr.aria-invalid]="mensaje('claveActual') !== null" [attr.aria-describedby]="mensaje('claveActual') ? 'claveActual-error' : null" />
+          @if (mensaje('claveActual'); as m) { <span id="claveActual-error" class="campo__error">{{ m }}</span> }
+        </div>
+
+        <div class="cuenta__fila">
+          <div class="campo">
+            <label for="nuevaClave">Contraseña nueva</label>
+            <input id="nuevaClave" formControlName="nuevaClave" [type]="verClave() ? 'text' : 'password'" autocomplete="new-password" [attr.aria-invalid]="mensaje('nuevaClave') !== null" aria-describedby="nuevaClave-ayuda" />
+            <span id="nuevaClave-ayuda" [class]="mensaje('nuevaClave') ? 'campo__error' : 'campo__ayuda'">
+              {{ mensaje('nuevaClave') ?? 'Mínimo 8 caracteres.' }}
+            </span>
+          </div>
+          <div class="campo">
+            <label for="confirmar">Repite la contraseña nueva</label>
+            <input id="confirmar" formControlName="confirmar" [type]="verClave() ? 'text' : 'password'" autocomplete="new-password" [attr.aria-invalid]="mensaje('confirmar') !== null" [attr.aria-describedby]="mensaje('confirmar') ? 'confirmar-error' : null" />
+            @if (mensaje('confirmar'); as m) { <span id="confirmar-error" class="campo__error">{{ m }}</span> }
+          </div>
+        </div>
+
+        <label class="cuenta__ver">
+          <input type="checkbox" [checked]="verClave()" (change)="verClave.set(!verClave())" />
+          Mostrar contraseñas
+        </label>
+
+        @if (error()) {
+          <p class="alerta alerta--error" role="alert">{{ error() }}</p>
+        }
+        @if (cambiada()) {
+          <p class="alerta alerta--exito" role="status">Tu contraseña se actualizó.</p>
+        }
+
+        <button type="submit" class="boton cuenta__guardar" [disabled]="enviando()">
+          {{ enviando() ? 'Guardando…' : 'Cambiar contraseña' }}
+        </button>
+      </form>
+    </section>
+  }
+</section>
