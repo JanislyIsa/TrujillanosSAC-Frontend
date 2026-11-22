@@ -10,7 +10,12 @@ export const routes: Routes = [
     component: IntranetLayout,
     canActivate: [empleadoGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'inventario' },
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./features/inicio/inicio').then((m) => m.Inicio),
+        title: 'Inicio · El Trujillano',
+      },
       {
         path: 'sin-acceso',
         loadComponent: () =>

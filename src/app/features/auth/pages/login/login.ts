@@ -18,6 +18,8 @@ export class Login {
   readonly returnUrl = input<string>();
   /** ?clave=actualizada: llegó desde restablecer la contraseña y se muestra un aviso. */
   readonly aviso = input<string>(undefined, { alias: 'clave' });
+  /** Hay una sesión abierta (de cliente): cambia el texto del aviso de acceso a la intranet. */
+  readonly sesionIniciada = this.auth.autenticado;
   /** ?motivo=empleado: se intentó entrar a la intranet con una cuenta que no es de empleado. */
   readonly motivo = input<string>();
 
@@ -44,7 +46,8 @@ export class Login {
 
   /**
    * Solo rutas internas: evita redirigir a otro sitio con un returnUrl manipulado.
-   * Sin returnUrl, un empleado entra a la intranet, un proveedor a su portal y un cliente al catálogo.
+   * Sin returnUrl, un proveedor entra a su portal y los demás (clientes y empleados) al catálogo;
+   * el empleado llega a la intranet con el botón "Intranet" de la cabecera.
    */
   private destino(): string {
     const url = this.returnUrl();
@@ -52,7 +55,9 @@ export class Login {
     if (this.auth.esProveedor()) {
       return url?.startsWith('/proveedor') ? url : '/proveedor/solicitudes';
     }
+    // El empleado siempre entra por la tienda; a la intranet llega con el botón "Intranet" de la cabecera.
+    if (this.auth.esEmpleado() && url?.startsWith('/intranet')) return '/catalogo';
     if (url && url.startsWith('/') && !url.startsWith('//')) return url;
-    return this.auth.esEmpleado() ? '/intranet' : '/catalogo';
+    return '/catalogo';
   }
 }
