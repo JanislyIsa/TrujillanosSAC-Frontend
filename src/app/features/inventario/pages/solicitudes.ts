@@ -1,5 +1,5 @@
 import { Component,computed,inject,signal } from '@angular/core';import { FormsModule } from '@angular/forms';
-import { InventarioApi,mensajeError } from '../../../core/api';import { Faltante,Opcion,Solicitud } from '../../../core/models';import { Icon } from '../../../shared/icon';import { Pager } from '../../../shared/pager';import { Dialog } from '../../../shared/dialog';import { FechaPipe,NumeroPipe } from '../../../shared/format';import { SolicitudForm } from '../components/solicitud-form';
+import { InventarioApi,mensajeError } from '../../../core/api';import { Faltante,Opcion,Solicitud } from '../../../core/models';import { Icon } from '../../../shared/icon';import { Pager } from '../../../shared/pager';import { Dialog } from '../../../shared/dialog';import { FechaPipe,NumeroPipe } from '../../../shared/format';import { SolicitudForm } from './solicitud-form';
 @Component({imports:[FormsModule,Icon,Pager,Dialog,FechaPipe,NumeroPipe,SolicitudForm],templateUrl:'./solicitudes.html'})
 export class SolicitudesPage{
   private readonly api=inject(InventarioApi);readonly data=signal<Solicitud[]>([]);readonly proveedores=signal<Opcion[]>([]);readonly faltantes=signal<Faltante[]>([]);readonly busy=signal(false);readonly error=signal('');readonly success=signal('');

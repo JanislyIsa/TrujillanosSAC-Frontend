@@ -1,6 +1,6 @@
 import { Component,computed,inject,signal } from '@angular/core';import { FormsModule } from '@angular/forms';import { RouterLink } from '@angular/router';
-import { InventarioApi,mensajeError } from '../../../core/api';import { AuthService } from '../../../core/auth';import { Alerta,Item,Notificacion } from '../../../core/models';
-import { Icon } from '../../../shared/icon';import { Pager } from '../../../shared/pager';import { NumeroPipe,FechaPipe } from '../../../shared/format';import { ItemDialog } from '../components/item-dialog';
+import { InventarioApi,mensajeError } from '../../../core/api';import { AuthService } from '../../../core/auth/auth-service';import { Alerta,Item,Notificacion } from '../../../core/models';
+import { Icon } from '../../../shared/icon';import { Pager } from '../../../shared/pager';import { NumeroPipe,FechaPipe } from '../../../shared/format';import { ItemDialog } from './item-dialog';
 @Component({imports:[FormsModule,RouterLink,Icon,Pager,NumeroPipe,FechaPipe,ItemDialog],templateUrl:'./alertas.html'})
 export class AlertasPage {
   private readonly api=inject(InventarioApi);readonly auth=inject(AuthService);readonly alertas=signal<Alerta[]>([]);readonly items=signal<Item[]>([]);readonly notificaciones=signal<Notificacion[]>([]);

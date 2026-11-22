@@ -1,10 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, ViewEncapsulation } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../core/auth/auth-service';
 import { ComprasApi } from '../compras/compras-api';
 import { Icon } from '../../shared/icon';
 
 @Component({
   imports: [RouterLink, RouterLinkActive, RouterOutlet, Icon],
+  // Usa los estilos de la intranet (botones, tablas, tarjetas); se cargan solo mientras se está en el portal.
+  styleUrl: '../../../styles.css',
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="supplier-shell">
       <aside class="supplier-sidebar">
@@ -24,6 +28,11 @@ import { Icon } from '../../shared/icon';
 })
 export class ProveedorLayout {
   readonly compras=inject(ComprasApi);
+  private readonly auth=inject(AuthService);
   private readonly router=inject(Router);
-  salir(){this.compras.cerrarSesion();void this.router.navigateByUrl('/login');}
+  constructor(){
+    // Si la sesión se cierra (Salir, o el token venció y el backend respondió 401), al login.
+    effect(()=>{if(!this.auth.autenticado())void this.router.navigateByUrl('/login');});
+  }
+  salir(){this.auth.cerrarSesion();}
 }

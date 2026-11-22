@@ -8,3 +8,6 @@ out-tsc/
 .env
 .env.*
 !.env.example
+
+# Respaldos locales
+respaldo-*.tar.gz

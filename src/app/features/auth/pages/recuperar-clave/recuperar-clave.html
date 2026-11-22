@@ -1,0 +1,34 @@
+<section class="contenedor auth">
+  <div class="auth__tarjeta">
+    <h1>Recupera tu contraseña</h1>
+
+    @if (enviadoA(); as correo) {
+      <p class="alerta alerta--exito" role="status">
+        Si <strong>{{ correo }}</strong> está registrado, te enviamos un enlace para crear una contraseña nueva. El
+        enlace vence en 30 minutos y solo se puede usar una vez.
+      </p>
+      <p class="auth__texto">¿No te llegó? Revisa la carpeta de spam o prueba con otro correo.</p>
+      <button type="button" class="boton boton--secundario boton--completo" (click)="otroCorreo()">Usar otro correo</button>
+    } @else {
+      <p class="auth__texto">Escribe el correo con el que creaste tu cuenta y te enviaremos un enlace.</p>
+
+      <form class="auth__form" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+        <div class="campo">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" formControlName="correo" type="email" autocomplete="email" [attr.aria-invalid]="mensajeCorreo() !== null" [attr.aria-describedby]="mensajeCorreo() ? 'correo-error' : null" />
+          @if (mensajeCorreo(); as m) { <span id="correo-error" class="campo__error">{{ m }}</span> }
+        </div>
+
+        @if (error()) {
+          <p class="alerta alerta--error" role="alert">{{ error() }}</p>
+        }
+
+        <button type="submit" class="boton boton--completo" [disabled]="enviando()">
+          {{ enviando() ? 'Enviando…' : 'Enviar enlace' }}
+        </button>
+      </form>
+    }
+
+    <p class="auth__pie"><a routerLink="/login">← Volver a ingresar</a></p>
+  </div>
+</section>

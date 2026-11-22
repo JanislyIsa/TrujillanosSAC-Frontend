@@ -1,0 +1,81 @@
+.login {
+  display: grid;
+  place-items: start center;
+  padding-block: 2rem;
+}
+
+.login__tarjeta {
+  width: min(100%, 420px);
+  padding: 2rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.login__texto {
+  margin: 0.4rem 0 1.5rem;
+  color: var(--texto-suave);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.campo__clave {
+  position: relative;
+}
+
+.campo__clave input {
+  padding-right: 5.5rem;
+}
+
+.campo__ver {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  font: inherit;
+  font-size: var(--t-1);
+  font-weight: 600;
+  color: var(--azul);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.alerta--error {
+  margin-bottom: 1rem;
+  color: var(--error);
+  background: #fff0ef;
+  border-color: #f2cfcc;
+}
+
+.login__registro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1.25rem;
+  margin-top: 1.5rem;
+  text-align: center;
+  border-top: 1px solid var(--borde);
+}
+
+.login__pie {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.login__aviso {
+  margin-bottom: 1rem;
+}
+
+.login__olvide {
+  align-self: flex-end;
+  font-size: var(--t-1);
+}

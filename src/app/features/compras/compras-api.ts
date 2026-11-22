@@ -1,48 +1,26 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../../core/auth/auth-service';
 
-/** Cliente de los controladores REST de compras del backend. */
+/**
+ * Cliente de los controladores REST de compras del backend.
+ * La sesión es la única del sistema (AuthService): el interceptor agrega «Authorization: Bearer» a cada
+ * petición, así que aquí ya no se maneja ningún token propio.
+ */
 @Injectable({ providedIn: 'root' })
 export class ComprasApi {
   private readonly http = inject(HttpClient);
-  private readonly base = '/api/v1/compras';
-  private readonly tokenKey = 'trujillanos.compras.jwt';
-  private readonly usernameKey = `${this.tokenKey}.username`;
-  private readonly rolesKey = `${this.tokenKey}.roles`;
+  private readonly auth = inject(AuthService);
+  private readonly base = `${environment.apiUrl}/compras`;
 
-  async iniciarSesion(username: string, password: string): Promise<ComprasLoginResponse> {
-    const response = await firstValueFrom(this.http.post<ComprasLoginResponse>(
-      '/api/v1/auth/login', { username, password }, { withCredentials: false },
-    ));
-    sessionStorage.setItem(this.tokenKey, response.token);
-    sessionStorage.setItem(`${this.tokenKey}.expiresAt`, String(Date.now() + response.expiraEnSegundos * 1000));
-    sessionStorage.setItem(this.usernameKey, response.username);
-    sessionStorage.setItem(this.rolesKey, JSON.stringify(response.roles));
-    return response;
+  esProveedor(): boolean { return this.auth.esProveedor(); }
+
+  nombreUsuario(): string {
+    const sesion = this.auth.sesion();
+    return sesion?.nombreCompleto || sesion?.username || 'Proveedor';
   }
-
-  cerrarSesion(): void {
-    sessionStorage.removeItem(this.tokenKey);
-    sessionStorage.removeItem(`${this.tokenKey}.expiresAt`);
-    sessionStorage.removeItem(this.usernameKey);
-    sessionStorage.removeItem(this.rolesKey);
-  }
-
-  tieneSesion(): boolean {
-    const token = sessionStorage.getItem(this.tokenKey);
-    const expiresAt = Number(sessionStorage.getItem(`${this.tokenKey}.expiresAt`));
-    if (token && Number.isFinite(expiresAt) && expiresAt > Date.now()) return true;
-    this.cerrarSesion();
-    return false;
-  }
-
-  esProveedor(): boolean {
-    try { return this.tieneSesion() && (JSON.parse(sessionStorage.getItem(this.rolesKey) ?? '[]') as string[]).includes('PROVEEDOR'); }
-    catch { return false; }
-  }
-
-  nombreUsuario(): string { return sessionStorage.getItem(this.usernameKey) ?? 'Proveedor'; }
 
   async solicitudesProveedor(query: Record<string, unknown> = {}): Promise<PaginaCompras<SolicitudProveedor>> { return this.get('/proveedor/solicitudes', query); }
   async solicitudProveedor(id: number): Promise<SolicitudProveedor> { return this.get(`/proveedor/solicitudes/${id}`); }
@@ -78,13 +56,7 @@ export class ComprasApi {
     URL.revokeObjectURL(url);
   }
 
-  private options() {
-    const token = this.tieneSesion() ? sessionStorage.getItem(this.tokenKey) : null;
-    return {
-      withCredentials: false,
-      headers: token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders(),
-    };
-  }
+  private options() { return {}; }
 
   get<T>(path: string, query: Record<string, unknown> = {}): Promise<T> {
     let params = new HttpParams();
@@ -99,10 +71,6 @@ export class ComprasApi {
   patch<T>(path: string, body: unknown = {}): Promise<T> {
     return firstValueFrom(this.http.patch<T>(this.base + path, body, this.options()));
   }
-}
-
-export interface ComprasLoginResponse {
-  token: string; tipo: 'Bearer'; expiraEnSegundos: number; username: string; roles: string[]; permisos: string[];
 }
 
 export interface PaginaCompras<T> {

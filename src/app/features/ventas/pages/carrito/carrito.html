@@ -1,0 +1,66 @@
+<section class="contenedor">
+  <h1>Mi carrito</h1>
+  <p class="visualmente-oculto" role="status">{{ anuncio() }}</p>
+
+  @if (carrito.items().length === 0) {
+    <div class="vacio">
+      <p>Tu carrito está vacío.</p>
+      <a routerLink="/catalogo" class="boton">Ver golosinas</a>
+    </div>
+  } @else {
+    <div class="carrito">
+      <ul class="lineas">
+        @for (l of carrito.items(); track l.producto.idProducto) {
+          <li class="linea">
+            <a class="linea__imagen" [routerLink]="['/producto', l.producto.idProducto]" tabindex="-1" aria-hidden="true">
+              @if (sinImagen().has(l.producto.idProducto)) {
+                <span>{{ l.producto.nombre.charAt(0) }}</span>
+              } @else {
+                <img [src]="imagen(l.producto.imagenUrl)" alt="" width="96" height="96" (error)="imagenFallida(l.producto.idProducto)" />
+              }
+            </a>
+
+            <div class="linea__info">
+              <a class="linea__nombre" [routerLink]="['/producto', l.producto.idProducto]">{{ l.producto.nombre }}</a>
+              <span class="chip">{{ l.producto.presentacion }}</span>
+              <p class="linea__unitario">{{ l.producto.precio | currency: 'PEN' : 'S/ ' }} c/u</p>
+            </div>
+
+            <div class="cantidad" role="group" [attr.aria-label]="'Cantidad de ' + l.producto.nombre">
+              <button type="button" aria-label="Quitar una unidad" [disabled]="l.cantidad <= 1" (click)="cambiar(l, -1)">−</button>
+              <output>{{ l.cantidad }}</output>
+              <button type="button" aria-label="Agregar una unidad" [disabled]="l.cantidad >= l.producto.stock" (click)="cambiar(l, 1)">+</button>
+            </div>
+
+            <p class="linea__subtotal">{{ subtotal(l) | currency: 'PEN' : 'S/ ' }}</p>
+
+            <button type="button" class="linea__quitar" [attr.aria-label]="'Quitar ' + l.producto.nombre + ' del carrito'" (click)="quitar(l)">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3" />
+              </svg>
+            </button>
+          </li>
+        }
+      </ul>
+
+      <aside class="resumen" aria-labelledby="resumen-titulo">
+        <h2 id="resumen-titulo">Resumen</h2>
+        <p class="resumen__fila"><span>Unidades</span><span>{{ carrito.cantidadTotal() }}</span></p>
+        <p class="resumen__fila resumen__total"><span>Total</span><span>{{ carrito.total() | currency: 'PEN' : 'S/ ' }}</span></p>
+
+        @if (auth.autenticado()) {
+          @if (errorPedido()) {
+            <p class="alerta resumen__error" role="alert">{{ errorPedido() }}</p>
+          }
+          <button type="button" class="boton boton--acento boton--completo" [disabled]="creando()" (click)="hacerPedido()">
+            {{ creando() ? 'Creando pedido…' : 'Hacer pedido' }}
+          </button>
+          <p class="resumen__nota">Reservamos tus golosinas por 30 minutos para que pagues.</p>
+        } @else {
+          <a class="boton boton--completo" routerLink="/login" [queryParams]="{ returnUrl: '/carrito' }">Inicia sesión para comprar</a>
+        }
+        <button type="button" class="resumen__vaciar" (click)="vaciar()">Vaciar carrito</button>
+      </aside>
+    </div>
+  }
+</section>

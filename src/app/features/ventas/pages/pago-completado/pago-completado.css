@@ -1,0 +1,39 @@
+.completado {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.completado__cabecera {
+  text-align: center;
+}
+
+.completado__cabecera p {
+  margin: 0.25rem 0 0;
+  color: var(--texto-suave);
+}
+
+.completado__icono {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 0.5rem;
+  font-size: var(--t3);
+  font-weight: 700;
+  color: #fff;
+  background: var(--exito);
+  border-radius: 50%;
+}
+
+.completado__aviso {
+  width: min(100%, 520px);
+  margin-inline: auto;
+}
+
+.completado__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}

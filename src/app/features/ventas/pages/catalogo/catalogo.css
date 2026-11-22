@@ -1,0 +1,184 @@
+.encabezado {
+  margin-bottom: 1.5rem;
+}
+
+.encabezado__texto,
+.busqueda-activa {
+  margin-top: 0.3rem;
+  color: var(--texto-suave);
+}
+
+/* Barra de filtros gris, como la de la intranet. */
+.categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  margin-bottom: 1.5rem;
+  background: #f0f2f5;
+  border-radius: var(--radio-chico);
+}
+
+.categoria {
+  padding: 0.45rem 1rem;
+  font: inherit;
+  font-size: 0.93rem;
+  font-weight: 650;
+  color: #464c58;
+  background: var(--superficie);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+}
+
+.categoria:hover {
+  color: var(--azul);
+  border-color: var(--lila);
+}
+
+.categoria[aria-pressed='true'] {
+  color: #fff;
+  background: var(--azul);
+  border-color: var(--azul);
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.25rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--superficie);
+  border: 1px solid #cfd5df;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.tarjeta:hover,
+.tarjeta:focus-within {
+  box-shadow: var(--sombra-alta);
+  transform: translateY(-2px);
+}
+
+/* Recuadro de tamaño fijo: la foto va «absoluta» para no estirarlo, sea cual sea su proporción. */
+.tarjeta__imagen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #eef0f3;
+}
+
+.tarjeta__imagen img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* llena el recuadro recortando los bordes; usa «contain» para verla completa */
+}
+
+.tarjeta__inicial {
+  font-size: var(--t4);
+  font-weight: 700;
+  color: #a1a9b7;
+}
+
+.tarjeta__cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+
+.tarjeta__cuerpo .chip {
+  align-self: flex-start;
+}
+
+.tarjeta__nombre {
+  font-size: var(--t1);
+}
+
+.tarjeta__enlace {
+  color: #252b32;
+  text-decoration: none;
+}
+
+.tarjeta__enlace::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.tarjeta__presentacion {
+  font-size: var(--t-1);
+  color: var(--texto-suave);
+}
+
+.tarjeta__aviso {
+  font-size: var(--t-1);
+  font-weight: 600;
+  color: var(--error);
+}
+
+.tarjeta__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.6rem;
+}
+
+.precio {
+  font-size: var(--t2);
+  font-weight: 700;
+  color: var(--marino);
+}
+
+.precio__desde {
+  display: block;
+  font-size: var(--t-1);
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+
+.tarjeta__agregar {
+  position: relative; /* por encima del enlace que cubre la tarjeta */
+  z-index: 1;
+  padding-inline: 1rem;
+}
+
+.tarjeta--esqueleto {
+  min-height: 330px;
+  background: linear-gradient(100deg, var(--borde) 30%, #eef2fd 50%, var(--borde) 70%) 0 0 / 200% 100%;
+  animation: brillo 1.4s linear infinite;
+}
+
+@keyframes brillo {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.aviso-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.vacio .boton {
+  margin-top: 1rem;
+}
