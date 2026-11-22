@@ -7,15 +7,9 @@
     <div class="form-column">
       <label>CÓDIGO DEL {{sustantivo().toUpperCase()}}<input [value]="item()?codigo(item()!):'Se asigna al guardar'" readonly></label>
       <label>NOMBRE DEL {{sustantivo().toUpperCase()}}<input formControlName="nombre" [placeholder]="esProducto()?'Ej. Tetin POP':'Ej. Azúcar refinada'" maxlength="100">@if(campo('nombre')){<span class="field-error">{{campo('nombre')}}</span>}</label>
-      <div class="field-row">
-        <label>TIPO<input [value]="esProducto()?'Producto':'Insumo'" readonly></label>
-        @if(esProducto()){<label>CATEGORÍA<select formControlName="idCategoria"><option [ngValue]="0">Seleccionar</option>@for(op of opciones().categorias;track op.id){<option [ngValue]="op.id">{{op.nombre}}</option>}</select>@if(campo('idCategoria')){<span class="field-error">{{campo('idCategoria')}}</span>}</label>}
-        @else{<label>ESTADO<select formControlName="activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></label>}
-      </div>
-      <div class="field-row">
-        <label>UNIDAD DE STOCK<select formControlName="idUnidad" [attr.disabled]="esEdicion()?'disabled':null"><option [ngValue]="0">Seleccionar</option>@for(op of (esProducto()?opciones().presentaciones:opciones().unidadesMedida);track op.id){<option [ngValue]="op.id">{{op.nombre}}</option>}</select>@if(campo('idUnidad')){<span class="field-error">{{campo('idUnidad')}}</span>}</label>
-        @if(esProducto()){<label>ESTADO<select formControlName="activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></label>}
-      </div>
+      @if(esProducto()){<div class="field-row"><label>CATEGORÍA<select formControlName="idCategoria"><option [ngValue]="0">Seleccionar</option>@for(op of opciones().categorias;track op.id){<option [ngValue]="op.id">{{op.nombre}}</option>}</select>@if(campo('idCategoria')){<span class="field-error">{{campo('idCategoria')}}</span>}</label><label>ESTADO<select formControlName="activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></label></div>}
+      @else{<label>ESTADO<select formControlName="activo"><option [ngValue]="true">Activo</option><option [ngValue]="false">Inactivo</option></select></label>}
+      <label>UNIDAD DE STOCK<select formControlName="idUnidad" [attr.disabled]="esEdicion()?'disabled':null"><option [ngValue]="0">Seleccionar</option>@for(op of (esProducto()?opciones().presentaciones:opciones().unidadesMedida);track op.id){<option [ngValue]="op.id">{{op.nombre}}</option>}</select>@if(campo('idUnidad')){<span class="field-error">{{campo('idUnidad')}}</span>}</label>
       <label>ALMACÉN<select formControlName="idAlmacen" [attr.disabled]="esEdicion()?'disabled':null"><option [ngValue]="0">Seleccionar almacén</option>@for(op of opciones().almacenes;track op.id){<option [ngValue]="op.id">{{op.nombre}}</option>}</select>@if(campo('idAlmacen')){<span class="field-error">{{campo('idAlmacen')}}</span>}</label>
       @if(esProducto()){<label>PRECIO DE VENTA (S/)<input type="number" min=".01" step=".01" max="99999999.99" formControlName="precio">@if(campo('precio')){<span class="field-error">{{campo('precio')}}</span>}</label>}
     </div>
@@ -41,7 +35,7 @@
 }
 @if(modo()==='detail'&&item();as i){
 <div class="detail-grid">
-  <aside><div class="detail-photo"><figure>@if(i.imagenUrl){<img [src]="urlImagen(i.imagenUrl)" [alt]="i.nombre">}@else{<div class="thumb-placeholder"><app-icon name="box"/></div>}<figcaption><small>IMAGEN DE REFERENCIA</small>{{i.nombre}}</figcaption></figure></div>
+  <aside>@if(esProducto()){<div class="detail-photo"><figure>@if(i.imagenUrl){<img [src]="urlImagen(i.imagenUrl)" [alt]="i.nombre">}@else{<div class="thumb-placeholder"><app-icon name="box"/></div>}<figcaption><small>IMAGEN DE REFERENCIA</small>{{i.nombre}}</figcaption></figure></div>}
   <div class="detail-stock"><span>ESTADO DE STOCK</span><strong>{{i.stock|numero}}</strong><small>{{i.unidad}} disponibles</small><p style="margin-top:10px"><span [class]="'badge '+(i.estadoStock==='BAJO'?'low':i.estadoStock==='SOBRESTOCK'?'over':'normal')">{{estadoLabel(i.estadoStock)}}</span></p></div></aside>
   <div class="detail-fields"><div class="field-row"><div><span class="detail-label">CÓDIGO</span><div class="detail-value code">{{codigo(i)}}</div></div><div><span class="detail-label">ESTADO</span><div class="detail-value" style="background:#effbf4;border-color:#e1f6e8"><span [class]="'badge dot '+(!i.activo?'inactive':'')">{{i.activo?'Activo':'Inactivo'}}</span></div></div></div>
   <div><span class="detail-label">NOMBRE</span><div class="detail-value">{{i.nombre}}</div></div>
