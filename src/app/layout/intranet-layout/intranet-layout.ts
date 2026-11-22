@@ -1,5 +1,7 @@
-import { Component, effect, inject, signal, ViewEncapsulation } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, computed, effect, inject, signal, ViewEncapsulation } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth-service';
 import { Icon } from '../../shared/icon';
 
@@ -20,23 +22,34 @@ export class IntranetLayout {
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly menuAbierto = signal(false);
-  readonly saliendo = signal(false);
   readonly error = signal('');
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      map(() => this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+  /** Sección que se muestra en la ruta de migas, según la pantalla actual. */
+  readonly seccion = computed(() => {
+    const url = this.url();
+    if (url.includes('/inventario')) return 'Inventario';
+    if (url.includes('/compras')) return 'Compras';
+    return 'Inicio';
+  });
 
   constructor() {
-    // Si la sesión se cierra (botón Salir, o el backend respondió 401 porque el token venció), al login.
-    // En un vencimiento se vuelve a la pantalla actual; al salir a propósito, no.
+    // Si la sesión se cierra (el backend respondió 401 porque el token venció, o se cerró desde otra
+    // pestaña), al login volviendo a la pantalla actual.
     effect(() => {
       if (this.auth.autenticado()) return;
-      const volver = this.saliendo() ? undefined : { returnUrl: this.router.url };
-      void this.router.navigate(['/login'], { queryParams: volver });
+      void this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
     });
   }
 
+  /** Sale de la intranet al catálogo; la sesión sigue abierta (se cierra desde "Mi cuenta"). */
   salir() {
-    if (this.saliendo()) return;
-    this.saliendo.set(true);
-    this.auth.cerrarSesion();
+    void this.router.navigateByUrl('/catalogo');
   }
 
   cerrarMenu() {

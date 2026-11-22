@@ -7,7 +7,12 @@ export const PROVEEDOR_ROUTES: Routes = [
     path: '',
     component: ProveedorLayout,
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'solicitudes' },
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./inicio').then((m) => m.InicioProveedorPage),
+        title: 'Inicio · El Trujillano',
+      },
       {
         path: 'solicitudes',
         loadComponent: () => import('./solicitudes').then((m) => m.SolicitudesProveedorPage),

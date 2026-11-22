@@ -4,9 +4,15 @@
     <p class="login__texto">Ingresa para ver tu cuenta y hacer tus pedidos.</p>
 
     @if (motivo() === 'empleado') {
-      <p class="alerta alerta--error login__aviso" role="status">
-        La intranet es solo para empleados. Ingresa con tu usuario de empleado.
-      </p>
+      @if (sesionIniciada()) {
+        <p class="alerta alerta--error login__aviso" role="status">
+          La intranet es solo para empleados. Ingresa con tu usuario de empleado.
+        </p>
+      } @else {
+        <p class="alerta login__aviso" role="status">
+          Acceso para empleados: ingresa con tu usuario de empleado para entrar a la intranet.
+        </p>
+      }
     }
 
     @if (aviso() === 'actualizada') {
