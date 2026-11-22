@@ -1,0 +1,42 @@
+app-main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.principal {
+  flex: 1;
+  padding-block: 2rem 3rem;
+}
+
+.pie {
+  padding-block: 1.5rem;
+  font-size: var(--t-1);
+  color: #a5b3c8;
+  background: var(--marino);
+}
+
+.pie {
+  border-top: 1px solid #1d334f;
+}
+
+.pie strong {
+  color: #fff;
+}
+
+.pie a {
+  color: var(--ambar);
+  text-decoration: underline;
+}
+
+/* Al imprimir solo queda el contenido de la página: sin cabecera ni pie. */
+@media print {
+  app-header,
+  .pie {
+    display: none;
+  }
+
+  .principal {
+    padding: 0;
+  }
+}

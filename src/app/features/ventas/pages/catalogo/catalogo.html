@@ -1,0 +1,86 @@
+<section class="contenedor">
+  <header class="encabezado">
+    <h1>Nuestras golosinas</h1>
+    <p class="encabezado__texto">Elige tus favoritas y agrégalas al carrito.</p>
+    @if (texto()) {
+      <p class="busqueda-activa">
+        Resultados para «{{ texto() }}» · <a routerLink="/catalogo">Quitar búsqueda</a>
+      </p>
+    }
+  </header>
+
+  @if (categorias().length > 1) {
+    <div class="categorias" role="group" aria-label="Filtrar por categoría">
+      <button type="button" class="categoria" [attr.aria-pressed]="!categoria()" (click)="categoria.set(null)">Todas</button>
+      @for (c of categorias(); track c) {
+        <button type="button" class="categoria" [attr.aria-pressed]="categoria() === c" (click)="categoria.set(c)">{{ c }}</button>
+      }
+    </div>
+  }
+
+  <p class="visualmente-oculto" role="status">{{ anuncio() }}</p>
+
+  @if (cargando()) {
+    <p class="visualmente-oculto" role="status">Cargando golosinas…</p>
+    <div class="grilla" aria-hidden="true">
+      @for (n of esqueletos; track n) {
+        <div class="tarjeta tarjeta--esqueleto"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="alerta aviso-error" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="boton boton--secundario" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (grupos().length === 0) {
+    <div class="vacio">
+      <p>No encontramos golosinas con ese filtro.</p>
+      <a routerLink="/catalogo" class="boton boton--secundario" (click)="categoria.set(null)">Ver todas</a>
+    </div>
+  } @else {
+    <ul class="grilla">
+      @for (g of grupos(); track g.clave) {
+        @let p = g.opciones[0];
+        @let varias = g.opciones.length > 1;
+        <li class="tarjeta">
+          <div class="tarjeta__imagen">
+            @if (sinImagen().has(p.idProducto)) {
+              <span class="tarjeta__inicial" aria-hidden="true">{{ g.nombre.charAt(0) }}</span>
+            } @else {
+              <img [src]="imagen(p.imagenUrl)" alt="" width="320" height="240" loading="lazy" (error)="imagenFallida(p.idProducto)" />
+            }
+          </div>
+          <div class="tarjeta__cuerpo">
+            <span class="chip">{{ p.categoria }}</span>
+            <h2 class="tarjeta__nombre">
+              <a class="tarjeta__enlace" [routerLink]="['/producto', p.idProducto]">{{ g.nombre }}</a>
+            </h2>
+            <p class="tarjeta__presentacion">
+              @for (o of g.opciones; track o.idProducto; let ultimo = $last) {
+                {{ o.presentacion }}{{ ultimo ? '' : ' · ' }}
+              }
+            </p>
+            @if (!varias && p.stock <= poco) {
+              <p class="tarjeta__aviso">¡Últimas {{ p.stock }} unidades!</p>
+            }
+            <div class="tarjeta__pie">
+              <p class="precio">
+                @if (varias) {
+                  <small class="precio__desde">Desde</small>
+                }
+                {{ p.precio | currency: 'PEN' : 'S/ ' }}
+              </p>
+              @if (varias) {
+                <a class="boton boton--secundario tarjeta__agregar" [routerLink]="['/producto', p.idProducto]">Elegir</a>
+              } @else {
+                <button type="button" class="boton tarjeta__agregar" [disabled]="completo(p)" (click)="agregar(p)">
+                  {{ completo(p) ? 'En tu carrito' : 'Agregar' }}
+                </button>
+              }
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

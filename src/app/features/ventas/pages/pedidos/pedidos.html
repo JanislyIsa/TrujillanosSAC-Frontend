@@ -1,0 +1,36 @@
+<section class="contenedor">
+  <h1>Mis pedidos</h1>
+
+  @if (cargando()) {
+    <p class="vacio" role="status">Cargando tus pedidos…</p>
+  } @else if (error()) {
+    <div class="alerta aviso-error" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="boton boton--secundario" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (pedidos().length === 0) {
+    <div class="vacio">
+      <p>Todavía no tienes pedidos.</p>
+      <a routerLink="/catalogo" class="boton">Ver golosinas</a>
+    </div>
+  } @else {
+    <ul class="lista">
+      @for (p of pedidos(); track p.idPedido) {
+        <li class="pedido">
+          <div class="pedido__datos">
+            <a class="pedido__numero" [routerLink]="['/pedidos', p.idPedido]">Pedido #{{ p.idPedido }}</a>
+            <p class="pedido__detalle">
+              {{ p.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }} · {{ unidades(p) }}
+              {{ unidades(p) === 1 ? 'unidad' : 'unidades' }}
+            </p>
+          </div>
+          <span class="estado estado--{{ tono(p.estado.codigo) }}">{{ p.estado.nombre }}</span>
+          <p class="pedido__total">{{ p.total | currency: 'PEN' : 'S/ ' }}</p>
+          <a class="boton boton--secundario" [routerLink]="['/pedidos', p.idPedido]">
+            {{ p.estado.codigo === 'PENDIENTE' ? 'Pagar' : 'Ver detalle' }}
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>

@@ -1,0 +1,45 @@
+<section class="contenedor auth">
+  <div class="auth__tarjeta">
+    <h1>Crea tu nueva contraseña</h1>
+
+    @if (!token()) {
+      <p class="alerta alerta--error" role="alert">Este enlace no es válido. Pide uno nuevo para continuar.</p>
+      <a class="boton boton--completo" routerLink="/recuperar-clave">Pedir un enlace nuevo</a>
+    } @else {
+      <p class="auth__texto">Elige una contraseña de entre 8 y 72 caracteres.</p>
+
+      <form class="auth__form" [formGroup]="form" (ngSubmit)="restablecer()" novalidate>
+        <div class="campo">
+          <label for="nuevaClave">Contraseña nueva</label>
+          <input id="nuevaClave" formControlName="nuevaClave" [type]="verClave() ? 'text' : 'password'" autocomplete="new-password" [attr.aria-invalid]="mensaje('nuevaClave') !== null" aria-describedby="nuevaClave-ayuda" />
+          <span id="nuevaClave-ayuda" [class]="mensaje('nuevaClave') ? 'campo__error' : 'campo__ayuda'">
+            {{ mensaje('nuevaClave') ?? 'Mínimo 8 caracteres.' }}
+          </span>
+        </div>
+
+        <div class="campo">
+          <label for="confirmar">Repite la contraseña</label>
+          <input id="confirmar" formControlName="confirmar" [type]="verClave() ? 'text' : 'password'" autocomplete="new-password" [attr.aria-invalid]="mensaje('confirmar') !== null" [attr.aria-describedby]="mensaje('confirmar') ? 'confirmar-error' : null" />
+          @if (mensaje('confirmar'); as m) { <span id="confirmar-error" class="campo__error">{{ m }}</span> }
+        </div>
+
+        <label class="auth__ver">
+          <input type="checkbox" [checked]="verClave()" (change)="verClave.set(!verClave())" />
+          Mostrar contraseñas
+        </label>
+
+        @if (error()) {
+          <p class="alerta alerta--error" role="alert">
+            {{ error() }} Si el enlace venció, <a routerLink="/recuperar-clave">pide uno nuevo</a>.
+          </p>
+        }
+
+        <button type="submit" class="boton boton--completo" [disabled]="enviando()">
+          {{ enviando() ? 'Guardando…' : 'Guardar contraseña' }}
+        </button>
+      </form>
+    }
+
+    <p class="auth__pie"><a routerLink="/login">← Volver a ingresar</a></p>
+  </div>
+</section>

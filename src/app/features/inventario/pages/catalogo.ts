@@ -5,9 +5,11 @@ import { Item, Pagina, TipoItem } from '../../../core/models';
 import { Icon } from '../../../shared/icon';
 import { Pager } from '../../../shared/pager';
 import { codigo, NumeroPipe } from '../../../shared/format';
-import { ItemDialog } from '../components/item-dialog';
+import { ItemDialog } from './item-dialog';
+import { urlImagen } from '../../../core/utils/imagen';
 @Component({imports:[FormsModule,Icon,Pager,NumeroPipe,ItemDialog],templateUrl:'./catalogo.html'})
 export class CatalogoPage {
+  readonly urlImagen = urlImagen;
   private readonly api=inject(InventarioApi);
   readonly tipo=signal<TipoItem>('PRODUCTO');readonly data=signal<Pagina<Item>|null>(null);
   readonly busy=signal(false);readonly error=signal('');readonly success=signal('');
