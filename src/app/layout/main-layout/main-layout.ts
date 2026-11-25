@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { Header } from '../header/header';
 
 /**
@@ -11,7 +11,7 @@ import { Header } from '../header/header';
  */
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, RouterLink, Header],
+  imports: [RouterOutlet, Header],
   templateUrl: './main-layout.html',
   styleUrls: ['./estilos-tienda.css', './main-layout.css'],
   encapsulation: ViewEncapsulation.None,
