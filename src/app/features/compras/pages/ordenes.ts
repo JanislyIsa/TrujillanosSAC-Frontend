@@ -99,7 +99,6 @@ export class OrdenesPage {
                 comprobanteId: orden.comprobanteId,
                 monto: orden.saldoPendiente,
                 fechaPago: fechaLocal,
-                metodoPagoId: 1,
             });
             this.confirmarRecepcion.set(null);
             await this.cargar();
