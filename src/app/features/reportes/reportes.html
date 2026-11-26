@@ -1,0 +1,37 @@
+<header class="page-heading"><div><p class="eyebrow">INTRANET · ANÁLISIS</p><h1>Reportes</h1><p>Consulta ventas, inventario y compras en un rango de fechas.</p></div><button class="button secondary" [disabled]="cargando()" (click)="cargar()"><app-icon name="refresh"/>Actualizar</button></header>
+
+<div class="tabs" role="tablist" aria-label="Tipo de reporte">
+  <button class="tab" [class.active]="tipo()==='categorias'" role="tab" [attr.aria-selected]="tipo()==='categorias'" (click)="seleccionar('categorias')">Ventas por categoría</button>
+  <button class="tab" [class.active]="tipo()==='productos'" role="tab" [attr.aria-selected]="tipo()==='productos'" (click)="seleccionar('productos')">Más vendidos</button>
+  <button class="tab" [class.active]="tipo()==='movimientos'" role="tab" [attr.aria-selected]="tipo()==='movimientos'" (click)="seleccionar('movimientos')">Movimientos</button>
+  @if(puedeCompras()){<button class="tab" [class.active]="tipo()==='proveedores'" role="tab" [attr.aria-selected]="tipo()==='proveedores'" (click)="seleccionar('proveedores')">Compras por proveedor</button>}
+</div>
+
+<form class="toolbar filters" (ngSubmit)="cargar()"><label class="filter-field">Desde<input type="date" name="desde" [ngModel]="desde()" (ngModelChange)="desde.set($event)"></label><label class="filter-field">Hasta<input type="date" name="hasta" [ngModel]="hasta()" (ngModelChange)="hasta.set($event)"></label><button class="button primary" type="submit" [disabled]="cargando()">Consultar</button></form>
+@if(error()){<div class="notice error" role="alert"><span>{{error()}}</span><button class="button small" (click)="cargar()">Reintentar</button></div>}
+
+<section class="report-title"><div><h2>{{titulo()}}</h2><p>Resultados devueltos por el sistema para el período seleccionado.</p></div></section>
+@if(tipo()==='categorias'||tipo()==='productos'){
+  <div class="summary-grid"><article class="summary-card"><div class="summary-icon"><app-icon name="stock"/></div><div><strong>{{totalUnidades()|numero}}</strong><p>Unidades vendidas</p></div></article><article class="summary-card money"><div class="summary-icon"><app-icon name="file"/></div><div><strong>S/ {{totalMonto()|numero}}</strong><p>Importe total</p></div></article><article class="summary-card"><div class="summary-icon"><app-icon name="box"/></div><div><strong>{{filas().length|numero}}</strong><p>{{tipo()==='categorias'?'Categorías':'Productos'}}</p></div></article></div>
+}
+@if(tipo()==='proveedores'){
+  <div class="summary-grid"><article class="summary-card"><div class="summary-icon"><app-icon name="file"/></div><div><strong>{{totalOrdenes()|numero}}</strong><p>Órdenes de compra</p></div></article><article class="summary-card money"><div class="summary-icon"><app-icon name="stock"/></div><div><strong>S/ {{totalMonto()|numero}}</strong><p>Importe total</p></div></article><article class="summary-card"><div class="summary-icon"><app-icon name="box"/></div><div><strong>{{filas().length|numero}}</strong><p>Proveedores</p></div></article></div>
+}
+
+@if((tipo()==='categorias'||tipo()==='productos'||tipo()==='proveedores')&&filas().length){<section class="chart-card"><div class="chart-heading"><div><h3>Importe por {{tipo()==='categorias'?'categoría':tipo()==='productos'?'producto':'proveedor'}}</h3><p>Comparación visual del monto total</p></div><strong>S/ {{totalMonto()|numero}}</strong></div><div class="bars">@for(f of filas();track $index){<div class="bar-row"><span class="bar-label">{{'categoriaNombre' in f?f.categoriaNombre:'productoNombre' in f?f.productoNombre:'proveedor' in f?f.proveedor:''}}</span><div class="bar-track"><span class="bar-fill" [style.width.%]="('montoTotal' in f?Number(f.montoTotal):0)/maxBarra()*100"></span></div><strong>S/ {{'montoTotal' in f?f.montoTotal:0|numero}}</strong></div>}</div></section>}
+
+<section class="table-card"><div class="table-scroll"><table><thead><tr>
+  @if(tipo()==='categorias'){<th>Categoría</th><th>Unidades vendidas</th><th>Monto total</th>}
+  @if(tipo()==='productos'){<th>Producto</th><th>Unidades vendidas</th><th>Monto total</th>}
+  @if(tipo()==='movimientos'){<th>Fecha</th><th>Hora</th><th>Tipo</th><th>Almacén</th><th>Productos</th><th>Insumos</th><th>Total unidades</th>}
+  @if(tipo()==='proveedores'){<th>Proveedor</th><th>Órdenes</th><th>Monto total</th>}
+  </tr></thead><tbody>
+  @if(cargando()){<tr><td [attr.colspan]="tipo()==='movimientos'?7:3" class="loading-row"><span class="spinner"></span>Consultando reporte…</td></tr>}
+  @else if(filas().length===0){<tr><td [attr.colspan]="tipo()==='movimientos'?7:3"><div class="empty-state"><app-icon name="file"/><h3>Sin resultados</h3><p>No hay datos para mostrar con este rango de fechas.</p></div></td></tr>}
+  @else{@for(f of filas();track $index){<tr>
+    @if(tipo()==='categorias'&&'categoriaNombre' in f){<td><strong>{{f.categoriaNombre}}</strong></td><td>{{f.unidadesVendidas|numero}}</td><td class="amount">S/ {{f.montoTotal|numero}}</td>}
+    @if(tipo()==='productos'&&'productoNombre' in f){<td><strong>{{f.productoNombre}}</strong></td><td>{{f.unidadesVendidas|numero}}</td><td class="amount">S/ {{f.montoTotal|numero}}</td>}
+    @if(tipo()==='movimientos'&&'idMovimiento' in f){<td>{{f.fecha}}</td><td>{{f.hora}}</td><td><span class="badge blue">{{f.tipoMovimiento}}</span></td><td>{{f.almacen}}</td><td>{{f.unidadesProductos|numero}}</td><td>{{f.unidadesInsumos|numero}}</td><td><strong>{{f.totalUnidades|numero}}</strong></td>}
+    @if(tipo()==='proveedores'&&'proveedor' in f){<td><strong>{{f.proveedor}}</strong></td><td>{{f.cantidadOrdenes|numero}}</td><td class="amount">S/ {{f.montoTotal|numero}}</td>}
+  </tr>}}
+  </tbody></table></div><div class="table-footer">{{filas().length|numero}} registros · {{titulo()}}</div></section>

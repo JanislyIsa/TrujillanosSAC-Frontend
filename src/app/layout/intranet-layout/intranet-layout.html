@@ -20,6 +20,9 @@
         <a class="nav-link" routerLink="/intranet/compras/ordenes" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="file"/><span>Órdenes de compra</span></a>
       </div>
     }
+    <div class="nav-section"><span class="nav-heading">ANÁLISIS</span>
+      <a class="nav-link" routerLink="/intranet/reportes" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="file"/><span>Reportes</span></a>
+    </div>
   </nav>
   <div class="sidebar-footer"><div class="user-avatar">{{auth.sesion()?.nombreCompleto?.charAt(0)}}</div><div class="user-info"><strong>{{auth.sesion()?.nombreCompleto}}</strong><small>{{auth.sesion()?.cargo?.replaceAll('_',' ')??'Empleado'}}</small></div></div>
 </aside>

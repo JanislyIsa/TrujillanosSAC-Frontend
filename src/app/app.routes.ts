@@ -32,6 +32,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/compras/compras.routes').then((m) => m.COMPRAS_ROUTES),
       },
+      {
+        path: 'reportes',
+        loadComponent: () => import('./features/reportes/reportes').then((m) => m.ReportesPage),
+        title: 'Reportes · El Trujillano',
+      },
     ],
   },
   // Portal de proveedores de insumos (solicitudes de compra y cotizaciones). Entra solo el rol PROVEEDOR.
