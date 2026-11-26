@@ -1,0 +1,30 @@
+<aside class="sidebar" [class.mobile-open]="menuAbierto()">
+  <a class="brand" routerLink="/intranet" (click)="cerrarMenu()"><strong>El Trujillano</strong><span>Portal de la empresa</span></a>
+  <nav aria-label="Navegación principal">
+    <div class="nav-section"><a class="nav-link" routerLink="/intranet" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="cerrarMenu()"><app-icon name="menu"/><span>Inicio</span></a></div>
+    <div class="nav-section"><span class="nav-heading">INVENTARIO</span>
+      @if(auth.puede('inventario')){
+        <a class="nav-link" routerLink="/intranet/inventario/catalogo" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="box"/><span>Gestión de productos<br>e insumos</span></a>
+      }
+      <a class="nav-link" routerLink="/intranet/inventario/stock" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="stock"/><span>Control de stock</span></a>
+      @if(auth.puede('inventario')){
+        <a class="nav-link" routerLink="/intranet/inventario/movimientos" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="movement"/><span>Movimientos de<br>inventario</span></a>
+      }
+      <a class="nav-link" routerLink="/intranet/inventario/alertas" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="alert"/><span>Alertas</span></a>
+    </div>
+    @if(auth.puede('compras')){
+      <div class="nav-section"><span class="nav-heading">COMPRAS</span>
+        <a class="nav-link" routerLink="/intranet/inventario/solicitudes" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="file"/><span>Solicitudes</span></a>
+        <a class="nav-link" routerLink="/intranet/compras/carrito" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="stock"/><span>Carrito de compra</span></a>
+        <a class="nav-link" routerLink="/intranet/compras/cotizaciones" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="movement"/><span>Cotizaciones</span></a>
+        <a class="nav-link" routerLink="/intranet/compras/ordenes" routerLinkActive="active" (click)="cerrarMenu()"><app-icon name="file"/><span>Órdenes de compra</span></a>
+      </div>
+    }
+  </nav>
+  <div class="sidebar-footer"><div class="user-avatar">{{auth.sesion()?.nombreCompleto?.charAt(0)}}</div><div class="user-info"><strong>{{auth.sesion()?.nombreCompleto}}</strong><small>{{auth.sesion()?.cargo?.replaceAll('_',' ')??'Empleado'}}</small></div></div>
+</aside>
+@if(menuAbierto()){<button class="menu-scrim" aria-label="Cerrar menú" (click)="cerrarMenu()"></button>}
+<div class="workspace">
+  <header class="topbar"><div class="breadcrumb"><button class="icon-button menu-toggle" aria-label="Abrir menú" (click)="menuAbierto.set(!menuAbierto())"><app-icon name="menu"/></button><span>Intranet</span><app-icon name="chevron"/><span>{{seccion()}}</span></div><button class="logout" title="Salir de la intranet y volver a la tienda" (click)="salir()"><app-icon name="logout"/><span>Salir</span></button></header>
+  <main class="page-content">@if(error()){<div class="notice error" role="alert">{{error()}}</div>}<router-outlet/></main>
+</div>

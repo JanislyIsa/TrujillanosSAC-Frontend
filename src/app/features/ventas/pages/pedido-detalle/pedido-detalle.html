@@ -1,0 +1,146 @@
+<section class="contenedor">
+  <a routerLink="/pedidos" class="volver no-imprimir">← Mis pedidos</a>
+
+  @if (cargando()) {
+    <p class="vacio" role="status">Cargando pedido…</p>
+  } @else if (error()) {
+    <div class="vacio" role="alert">
+      <p>{{ error() }}</p>
+      <a routerLink="/pedidos" class="boton">Ver mis pedidos</a>
+    </div>
+  } @else if (pedido(); as p) {
+    <header class="encabezado no-imprimir">
+      <div>
+        <h1>Pedido #{{ p.idPedido }}</h1>
+        <p class="encabezado__fecha">{{ p.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+      <span class="estado estado--{{ tono(p.estado.codigo) }}">{{ p.estado.nombre }}</span>
+    </header>
+    <p class="explicacion no-imprimir" role="status">{{ explicacion(p.estado.codigo) }}</p>
+
+    @if (pagado()) {
+      @if (cargandoComprobante()) {
+        <p class="vacio" role="status">Cargando tu comprobante…</p>
+      } @else if (errorComprobante()) {
+        <div class="vacio no-imprimir" role="alert">
+          <p>{{ errorComprobante() }}</p>
+          <button type="button" class="boton" (click)="cargarComprobante(p.idPedido)">
+            Reintentar
+          </button>
+        </div>
+      } @else if (comprobante(); as c) {
+        <app-ticket [comprobante]="c" />
+        <div class="acciones no-imprimir">
+          <button type="button" class="boton" (click)="imprimirTicket()">Imprimir ticket</button>
+        </div>
+      }
+    } @else {
+      <div class="disposicion">
+        <div class="tarjeta">
+          <table class="tabla">
+            <caption class="visualmente-oculto">
+              Productos del pedido
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Presentación</th>
+                <th scope="col">Cant.</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of p.detalles; track d.idDetalle) {
+                <tr>
+                  <th scope="row">{{ d.nombreProducto }}</th>
+                  <td>{{ d.presentacion }}</td>
+                  <td>{{ d.cantidad }}</td>
+                  <td>{{ d.precioUnitario | currency: 'PEN' : 'S/ ' }}</td>
+                  <td>{{ d.subtotal | currency: 'PEN' : 'S/ ' }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row" colspan="4">Total</th>
+                <td>{{ p.total | currency: 'PEN' : 'S/ ' }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <aside class="panel">
+          @switch (p.estado.codigo) {
+            @case ('PENDIENTE') {
+              <form class="pago" (submit)="pagar($event)" novalidate>
+                <h2>Pagar pedido</h2>
+                <p class="pago__vence">
+                  Paga antes de las <strong>{{ vence() | date: 'HH:mm' }}</strong>. Pasada esa hora
+                  el pedido se cancela solo y el stock se libera.
+                </p>
+
+                @if (correoCuenta(); as correo) {
+                  <p class="pago__correo">
+                    Pagas con el correo de tu cuenta: <strong>{{ correo }}</strong>
+                  </p>
+                } @else {
+                  <div class="campo">
+                    <label for="correo">Correo electrónico</label>
+                    <input
+                      #correo
+                      id="correo"
+                      name="correo"
+                      type="email"
+                      autocomplete="email"
+                      required
+                      (input)="correoManual.set(correo.value)"
+                    />
+                  </div>
+                }
+
+                @if (errorPago()) {
+                  <p class="alerta alerta--error" role="alert">{{ errorPago() }}</p>
+                }
+
+                <button
+                  type="submit"
+                  class="boton boton--acento boton--completo"
+                  [disabled]="pagando() || !culqiListo"
+                >
+                  {{ pagando() ? 'Procesando pago…' : 'Pagar '
+                  }}{{ pagando() ? '' : (p.total | currency: 'PEN' : 'S/ ') }}
+                </button>
+                @if (!culqiListo) {
+                  <p class="alerta alerta--error" role="alert">
+                    Los pagos no están disponibles: falta configurar la llave pública de Culqi.
+                  </p>
+                }
+              </form>
+            }
+            @case ('PROCESANDO_PAGO') {
+              <div class="pago">
+                <h2>Pago en proceso</h2>
+                <p>Estamos esperando la respuesta del banco.</p>
+                <button
+                  type="button"
+                  class="boton boton--secundario boton--completo"
+                  (click)="cargar(p.idPedido, true)"
+                >
+                  Actualizar estado
+                </button>
+              </div>
+            }
+            @case ('CANCELADO') {
+              <div class="pago">
+                <h2>Pedido cancelado</h2>
+                <p>Si aún quieres estas golosinas, haz un pedido nuevo desde el catálogo.</p>
+                <a routerLink="/catalogo" class="boton boton--completo">Ir al catálogo</a>
+              </div>
+            }
+          }
+        </aside>
+      </div>
+    }
+  }
+</section>

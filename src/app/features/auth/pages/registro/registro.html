@@ -1,0 +1,92 @@
+<section class="contenedor registro">
+  <div class="registro__tarjeta">
+    <h1>Crea tu cuenta</h1>
+    <p class="registro__texto">Regístrate para hacer pedidos y pagar en línea.</p>
+
+    <form [formGroup]="form" (ngSubmit)="registrar()" novalidate>
+      <div class="registro__fila">
+        <div class="campo">
+          <label for="nombre">Nombres</label>
+          <input id="nombre" formControlName="nombre" autocomplete="given-name" [attr.aria-invalid]="invalido('nombre')" [attr.aria-describedby]="invalido('nombre') ? 'nombre-error' : null" />
+          @if (mensaje('nombre'); as m) { <span id="nombre-error" class="campo__error">{{ m }}</span> }
+        </div>
+        <div class="campo">
+          <label for="apellido">Apellidos</label>
+          <input id="apellido" formControlName="apellido" autocomplete="family-name" [attr.aria-invalid]="invalido('apellido')" [attr.aria-describedby]="invalido('apellido') ? 'apellido-error' : null" />
+          @if (mensaje('apellido'); as m) { <span id="apellido-error" class="campo__error">{{ m }}</span> }
+        </div>
+      </div>
+
+      <div class="registro__fila">
+        <div class="campo">
+          <label for="tipoDocumento">Tipo de documento</label>
+          <select id="tipoDocumento" formControlName="tipoDocumento">
+            @for (d of documentos; track d.codigo) {
+              <option [value]="d.codigo">{{ d.nombre }}</option>
+            }
+          </select>
+        </div>
+        <div class="campo">
+          <label for="numeroDocumento">Número de documento</label>
+          <input id="numeroDocumento" formControlName="numeroDocumento" inputmode="numeric" [attr.maxlength]="longitud()" [attr.aria-invalid]="invalido('numeroDocumento')" [attr.aria-describedby]="'numeroDocumento-ayuda'" />
+          <span id="numeroDocumento-ayuda" [class]="invalido('numeroDocumento') ? 'campo__error' : 'campo__ayuda'">
+            {{ mensaje('numeroDocumento') ?? longitud() + ' caracteres' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="registro__fila">
+        <div class="campo">
+          <label for="telefono">Teléfono</label>
+          <input id="telefono" formControlName="telefono" type="tel" inputmode="numeric" maxlength="9" autocomplete="tel-national" [attr.aria-invalid]="invalido('telefono')" [attr.aria-describedby]="invalido('telefono') ? 'telefono-error' : null" />
+          @if (mensaje('telefono'); as m) { <span id="telefono-error" class="campo__error">{{ m }}</span> }
+        </div>
+        <div class="campo">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" formControlName="correo" type="email" autocomplete="email" [attr.aria-invalid]="invalido('correo')" [attr.aria-describedby]="invalido('correo') ? 'correo-error' : null" />
+          @if (mensaje('correo'); as m) { <span id="correo-error" class="campo__error">{{ m }}</span> }
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="username">Usuario</label>
+        <input id="username" formControlName="username" autocomplete="username" autocapitalize="none" [attr.aria-invalid]="invalido('username')" aria-describedby="username-ayuda" />
+        <span id="username-ayuda" [class]="invalido('username') ? 'campo__error' : 'campo__ayuda'">
+          {{ mensaje('username') ?? 'Con este usuario iniciarás sesión.' }}
+        </span>
+      </div>
+
+      <div class="registro__fila">
+        <div class="campo">
+          <label for="password">Contraseña</label>
+          <input id="password" formControlName="password" [type]="verClave() ? 'text' : 'password'" autocomplete="new-password" [attr.aria-invalid]="invalido('password')" aria-describedby="password-ayuda" />
+          <span id="password-ayuda" [class]="invalido('password') ? 'campo__error' : 'campo__ayuda'">
+            {{ mensaje('password') ?? 'Mínimo 8 caracteres.' }}
+          </span>
+        </div>
+        <div class="campo">
+          <label for="confirmar">Repite la contraseña</label>
+          <input id="confirmar" formControlName="confirmar" [type]="verClave() ? 'text' : 'password'" autocomplete="new-password" [attr.aria-invalid]="invalido('confirmar')" [attr.aria-describedby]="invalido('confirmar') ? 'confirmar-error' : null" />
+          @if (mensaje('confirmar'); as m) { <span id="confirmar-error" class="campo__error">{{ m }}</span> }
+        </div>
+      </div>
+
+      <label class="registro__ver">
+        <input type="checkbox" [checked]="verClave()" (change)="verClave.set(!verClave())" />
+        Mostrar contraseñas
+      </label>
+
+      @if (error()) {
+        <p class="alerta alerta--error" role="alert">{{ error() }}</p>
+      }
+
+      <button type="submit" class="boton boton--completo" [disabled]="enviando()">
+        {{ enviando() ? 'Creando cuenta…' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <p class="registro__pie">
+      ¿Ya tienes cuenta? <a routerLink="/login" [queryParams]="{ returnUrl: returnUrl() }">Inicia sesión</a>
+    </p>
+  </div>
+</section>

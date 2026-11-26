@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "ng serve --host localhost --port 4200",
+    "start": "ng serve",
     "build": "ng build",
-    "build:backend": "ng build --base-href /inventario-app/ && node scripts/integrar-backend.mjs",
+    "test": "ng test --watch=false",
+    "test:coverage": "ng test --watch=false --coverage",
+    "watch": "ng build --watch --configuration development",
     "check": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
@@ -22,6 +24,10 @@
     "@angular/build": "^22.0.0",
     "@angular/cli": "^22.0.0",
     "@angular/compiler-cli": "^22.0.0",
-    "typescript": "~6.0.0"
+    "@sonar/scan": "^5.1.0",
+    "@vitest/coverage-v8": "^4.1.12",
+    "jsdom": "^31.0.1",
+    "typescript": "~6.0.0",
+    "vitest": "^4.1.12"
   }
 }

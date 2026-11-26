@@ -1,0 +1,161 @@
+.cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  color: #fff;
+  background: var(--marino);
+  border-bottom: 1px solid #1d334f;
+}
+
+.cabecera__fila {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 72px;
+  padding-block: 0.6rem;
+}
+
+.cabecera :focus-visible {
+  outline-color: #89b7ff;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.marca__icono {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: #263a54;
+  border-radius: 8px;
+}
+
+.marca__icono img {
+  width: 36px;
+  height: auto;
+}
+
+.marca__texto {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--t1);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.marca__texto small {
+  font-size: var(--t-1);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #95a6bd;
+}
+
+.busqueda {
+  display: flex;
+  flex: 1;
+  max-width: 640px;
+  margin-inline: auto;
+  overflow: hidden;
+  background: #fff;
+  border-radius: var(--radio-chico);
+}
+
+.busqueda input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem 1.1rem;
+  font: inherit;
+  color: var(--texto);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.busqueda input::placeholder {
+  color: var(--texto-suave);
+}
+
+.busqueda__boton {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  color: #fff;
+  background: var(--azul);
+  border: 0;
+  cursor: pointer;
+}
+
+.busqueda__boton:hover {
+  background: var(--azul-oscuro);
+}
+
+.opciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.opcion {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  font: inherit;
+  font-size: var(--t-1);
+  font-weight: 600;
+  color: #a5b3c8;
+  background: transparent;
+  text-decoration: none;
+  border: 0;
+  border-radius: var(--radio-chico);
+}
+
+.opcion:hover {
+  color: #fff;
+  background: #182f4b;
+}
+
+.insignia {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 20px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  color: #513906;
+  background: var(--ambar);
+  border-radius: 999px;
+}
+
+@media (max-width: 760px) {
+  .cabecera__fila {
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+  }
+
+  .busqueda {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .opciones {
+    margin-left: auto;
+  }
+
+  .opcion__texto {
+    display: none;
+  }
+}

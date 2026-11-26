@@ -1,0 +1,66 @@
+<section class="contenedor">
+  <a routerLink="/catalogo" class="volver">← Volver al catálogo</a>
+
+  @if (cargando()) {
+    <p role="status" class="vacio">Cargando golosina…</p>
+  } @else if (fallo(); as f) {
+    <div class="vacio" role="alert">
+      <h1>{{ f.noExiste ? 'Esta golosina ya no está disponible' : 'No pudimos cargarla' }}</h1>
+      <p>{{ f.noExiste ? 'Puede que se haya agotado o que ya no se venda.' : f.mensaje }}</p>
+      <a routerLink="/catalogo" class="boton">Ver el catálogo</a>
+    </div>
+  } @else if (producto(); as p) {
+    <article class="detalle">
+      <div class="detalle__imagen">
+        @if (sinImagen()) {
+          <span class="detalle__inicial" aria-hidden="true">{{ p.nombre.charAt(0) }}</span>
+        } @else {
+          <img [src]="imagen(p.imagenUrl)" [alt]="p.nombre" width="640" height="480" (error)="sinImagen.set(true)" />
+        }
+      </div>
+
+      <div class="detalle__info">
+        <span class="chip">{{ p.categoria }}</span>
+        <h1>{{ p.nombre }}</h1>
+        <p class="detalle__descripcion">{{ p.descripcion }}</p>
+
+        <div class="presentaciones" role="group" aria-labelledby="presentacion-etiqueta">
+          <span id="presentacion-etiqueta" class="detalle__etiqueta">Presentación</span>
+          <div class="presentaciones__lista">
+            @for (o of presentaciones(); track o.idProducto) {
+              <a class="presentacion" [routerLink]="['/producto', o.idProducto]" [replaceUrl]="true"
+                [attr.aria-current]="o.idProducto === p.idProducto ? 'true' : null">
+                <strong>{{ o.presentacion }}</strong>
+                <span>{{ o.precio | currency: 'PEN' : 'S/ ' }}</span>
+              </a>
+            }
+          </div>
+        </div>
+
+        <div class="detalle__precio">
+          <span class="detalle__etiqueta">Precio por {{ p.presentacion.toLowerCase() }}</span>
+          <p class="precio">{{ p.precio | currency: 'PEN' : 'S/ ' }}</p>
+          <p class="detalle__stock" [class.detalle__stock--poco]="p.stock <= 10">
+            {{ p.stock <= 10 ? '¡Últimas ' + p.stock + ' unidades!' : p.stock + ' unidades disponibles' }}
+          </p>
+        </div>
+
+        @if (disponibles() > 0) {
+          <div class="detalle__compra">
+            <div class="cantidad" role="group" aria-label="Cantidad">
+              <button type="button" aria-label="Quitar una unidad" [disabled]="cantidad() <= 1" (click)="cambiar(-1)">−</button>
+              <output aria-live="polite">{{ cantidad() }}</output>
+              <button type="button" aria-label="Agregar una unidad" [disabled]="cantidad() >= disponibles()" (click)="cambiar(1)">+</button>
+            </div>
+            <p class="detalle__subtotal">Subtotal: <strong>{{ subtotal() | currency: 'PEN' : 'S/ ' }}</strong></p>
+          </div>
+          <button type="button" class="boton boton--completo" (click)="agregar()">Agregar {{ p.presentacion.toLowerCase() }} al carrito</button>
+        } @else {
+          <p class="alerta">Ya tienes en el carrito todas las unidades disponibles.</p>
+        }
+
+        <p class="detalle__aviso" role="status">{{ aviso() }}</p>
+      </div>
+    </article>
+  }
+</section>

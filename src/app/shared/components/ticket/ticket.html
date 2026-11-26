@@ -1,0 +1,169 @@
+@let c = comprobante();
+<!-- En pantalla: comprobante con el diseño del profesor (tarjeta con tabla). -->
+<article class="comprobante" aria-label="Comprobante de pago">
+  <header class="comprobante__cabecera">
+    <div>
+      <strong class="comprobante__marca">{{ c.negocio.razonSocial }}</strong>
+      <span> {{ titulo() }}@if (c.negocio.ruc) { · RUC {{ c.negocio.ruc }} } </span>
+    </div>
+    <div class="comprobante__numero">
+      <span>N.º</span>
+      <strong>{{ numero() }}</strong>
+    </div>
+  </header>
+
+  <dl class="comprobante__datos">
+    <div>
+      <dt>Cliente</dt>
+      <dd>{{ c.cliente.nombreCompleto }}</dd>
+    </div>
+    @if (c.cliente.numeroDocumento) {
+    <div>
+      <dt>{{ c.cliente.tipoDocumento ?? 'Documento' }}</dt>
+      <dd>{{ c.cliente.numeroDocumento }}</dd>
+    </div>
+    }
+    <div>
+      <dt>Fecha</dt>
+      <dd>{{ fecha() | date: 'dd/MM/yyyy HH:mm' }}</dd>
+    </div>
+    @if (c.metodoPago) {
+    <div>
+      <dt>Pago</dt>
+      <dd>{{ c.metodoPago }}</dd>
+    </div>
+    } @if (c.referenciaOperacion) {
+    <div>
+      <dt>N.º operación</dt>
+      <dd class="comprobante__operacion">{{ c.referenciaOperacion }}</dd>
+    </div>
+    }
+      <div>
+          <dt>Estado</dt>
+          <dd>
+              <span class="estado estado--{{ tono() }}">{{ c.estadoPedido }}</span>
+          </dd>
+      </div>
+  </dl>
+
+  <div class="comprobante__tabla-caja">
+    <table class="comprobante__tabla">
+      <caption class="visualmente-oculto">
+        Productos del comprobante
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Producto</th>
+          <th scope="col">Presentación</th>
+          <th scope="col" class="monto">Precio</th>
+          <th scope="col" class="monto">Cantidad</th>
+          <th scope="col" class="monto">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of c.items; track $index) {
+        <tr>
+          <th scope="row">{{ d.descripcion }}</th>
+          <td>{{ d.presentacion ? (d.presentacion | titlecase) : '—' }}</td>
+          <td class="monto">{{ d.precioUnitario | currency: 'PEN' : 'S/ ' }}</td>
+          <td class="monto">{{ d.cantidad }}</td>
+          <td class="monto">{{ d.subtotal | currency: 'PEN' : 'S/ ' }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="comprobante__total">
+    {{ c.items.length }} {{ c.items.length === 1 ? 'producto' : 'productos' }} · {{ c.unidades }} {{
+    c.unidades === 1 ? 'unidad' : 'unidades' }} · Total: {{ c.total | currency: 'PEN' : 'S/ ' }}
+  </p>
+
+  <footer class="comprobante__pie">
+    <p>¡Gracias por tu compra!</p>
+  </footer>
+</article>
+
+<!-- Al imprimir: ticket de 80 mm (el mismo del correo). En pantalla no se ve. -->
+<article class="ticket" aria-label="Comprobante de pago">
+  <header class="ticket__cabecera">
+    <strong class="ticket__negocio">{{ c.negocio.razonSocial }}</strong>
+    @if (c.negocio.ruc) {
+    <span>RUC {{ c.negocio.ruc }}</span>
+    } @if (c.negocio.direccion) {
+    <span>{{ c.negocio.direccion }}</span>
+    }
+  </header>
+
+  <hr class="ticket__linea" />
+  <p class="ticket__titulo">{{ titulo().toUpperCase() }}</p>
+  <p class="ticket__titulo">{{ numero() }}</p>
+  <hr class="ticket__linea" />
+
+  <dl class="ticket__datos">
+    <div>
+      <dt>Fecha</dt>
+      <dd>{{ fecha() | date: 'dd/MM/yyyy HH:mm' }}</dd>
+    </div>
+    <div>
+      <dt>Cliente</dt>
+      <dd>{{ c.cliente.nombreCompleto }}</dd>
+    </div>
+    @if (c.cliente.numeroDocumento) {
+    <div>
+      <dt>{{ c.cliente.tipoDocumento ?? 'Documento' }}</dt>
+      <dd>{{ c.cliente.numeroDocumento }}</dd>
+    </div>
+    }
+  </dl>
+
+  <hr class="ticket__linea" />
+  <ul class="ticket__items">
+    @for (d of c.items; track $index) {
+    <li>
+      <div class="ticket__fila">
+        <span>{{ d.cantidad }} x {{ d.descripcion }}</span>
+        <span class="ticket__puntos" aria-hidden="true"></span>
+        <span>{{ d.subtotal | currency: 'PEN' : 'S/ ' }}</span>
+      </div>
+      <div class="ticket__detalle">
+        @if (d.presentacion) { {{ d.presentacion | titlecase }} · } {{ d.precioUnitario | currency:
+        'PEN' : 'S/ ' }} c/u
+      </div>
+    </li>
+    }
+  </ul>
+  <p class="ticket__resumen">
+    {{ c.items.length }} {{ c.items.length === 1 ? 'producto' : 'productos' }} · {{ c.unidades }} {{
+    c.unidades === 1 ? 'unidad' : 'unidades' }}
+  </p>
+
+  <hr class="ticket__linea" />
+  <p class="ticket__total">
+    <span>TOTAL</span><span>{{ c.total | currency: 'PEN' : 'S/ ' }}</span>
+  </p>
+  <hr class="ticket__linea" />
+
+  <dl class="ticket__datos">
+    @if (c.metodoPago) {
+    <div>
+      <dt>Pago</dt>
+      <dd>{{ c.metodoPago }}</dd>
+    </div>
+    } @if (c.referenciaOperacion) {
+    <div>
+      <dt>N.º operación</dt>
+      <dd class="ticket__operacion">{{ c.referenciaOperacion }}</dd>
+    </div>
+    }
+    <div>
+      <dt>Estado</dt>
+      <dd>{{ c.estadoPedido }}</dd>
+    </div>
+  </dl>
+
+  <hr class="ticket__linea" />
+  <footer class="ticket__pie">
+    <p>¡Gracias por tu compra!</p>
+  </footer>
+</article>

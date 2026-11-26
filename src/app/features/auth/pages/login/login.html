@@ -1,0 +1,55 @@
+<section class="contenedor login">
+  <div class="login__tarjeta">
+    <h1>Inicia sesión</h1>
+    <p class="login__texto">Ingresa para ver tu cuenta y hacer tus pedidos.</p>
+
+    @if (motivo() === 'empleado') {
+      @if (sesionIniciada()) {
+        <p class="alerta alerta--error login__aviso" role="status">
+          La intranet es solo para empleados. Ingresa con tu usuario de empleado.
+        </p>
+      } @else {
+        <p class="alerta login__aviso" role="status">
+          Acceso para empleados: ingresa con tu usuario de empleado para entrar a la intranet.
+        </p>
+      }
+    }
+
+    @if (aviso() === 'actualizada') {
+      <p class="alerta alerta--exito login__aviso" role="status">Tu contraseña se actualizó. Ya puedes ingresar.</p>
+    }
+
+    <form (submit)="ingresar($event, usuario.value, clave.value)" novalidate>
+      <div class="campo">
+        <label for="usuario">Usuario</label>
+        <input #usuario id="usuario" name="usuario" type="text" autocomplete="username" autocapitalize="none" required />
+      </div>
+
+      <div class="campo">
+        <label for="clave">Contraseña</label>
+        <div class="campo__clave">
+          <input #clave id="clave" name="clave" [type]="verClave() ? 'text' : 'password'" autocomplete="current-password" required />
+          <button type="button" class="campo__ver" [attr.aria-pressed]="verClave()" (click)="verClave.set(!verClave())">
+            {{ verClave() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+        <a class="login__olvide" routerLink="/recuperar-clave">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      @if (error()) {
+        <p class="alerta alerta--error" role="alert">{{ error() }}</p>
+      }
+
+      <button type="submit" class="boton boton--completo" [disabled]="enviando()">
+        {{ enviando() ? 'Ingresando…' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <div class="login__registro">
+      <p>¿Todavía no tienes cuenta?</p>
+      <a class="boton boton--secundario boton--completo" routerLink="/registro" [queryParams]="{ returnUrl: returnUrl() }">Regístrate</a>
+    </div>
+
+    <p class="login__pie"><a routerLink="/catalogo">← Seguir viendo golosinas</a></p>
+  </div>
+</section>

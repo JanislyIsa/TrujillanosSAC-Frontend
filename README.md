@@ -1,76 +1,58 @@
-# Frontend de inventario · El Trujillano
+# Frontend de El Trujillano (tienda + intranet)
 
-Aplicación Angular 22, con organización basada en [pharma-frontend](https://github.com/JanislyIsa/pharma-frontend) y diseño basado en los prototipos proporcionados. Los componentes, modelos, servicios HTTP y rutas se mantienen separados.
+Un solo proyecto Angular 22 con dos áreas que comparten login y sesión (JWT):
 
-## Pantallas incluidas
+| Área | Para quién | Rutas | Diseño |
+|---|---|---|---|
+| **Tienda** | Clientes | `/catalogo`, `/producto/:id`, `/carrito`, `/pedidos`, `/cuenta`, `/login`, `/registro`, `/recuperar-clave` | Guía de estilos de la tienda |
+| **Intranet** | Empleados | `/intranet/inventario/...` (más módulos después, siempre bajo `/intranet/<modulo>`) | Diseño de inventario (barra lateral) |
 
-- Productos e insumos: pestañas, búsqueda por nombre/código, filtro activo/inactivo y paginación. Modales de registro, detalle, edición y eliminación lógica.
-- Registro de productos con precio, descripción, categoría, presentación, almacén, límites e imagen JPG/PNG de hasta 2 MB. Vista previa y validación del archivo.
-- Control de stock: filtros por tipo, almacén y nivel; cantidades y detalle del registro.
-- Movimientos: ingresos y salidas, vista previa del saldo resultante, filtros de historial y comprobante imprimible.
-- Alertas: niveles bajos y sobrestock, historial de alertas resueltas y revisión manual de niveles.
-- Notificaciones propias del jefe de compras, con marcado de lectura.
-- Solicitudes de reposición: selección manual o llenado con insumos faltantes, cantidades editables, proveedor y envío al módulo de compras.
-- Compras: carrito de insumos, solicitudes, revisión de cotizaciones y órdenes de compra con detalle y registro de pago.
-- Sesión con usuario/contraseña, menú según permisos y cierre de sesión.
+Organización basada en [pharma-frontend](https://github.com/EstebanHub07/pharma-frontend). Backend: `PROYECTO-EL TRUJILLANO` (Spring Boot).
 
-Los datos mostrados provienen del backend. Los ejemplos con Tetin POP y otros productos pertenecen exclusivamente a la vista previa H2 descrita abajo.
+## Cómo funciona el acceso
+
+- **Un solo login** (`/login`) con `POST /api/v1/auth/login`. El token JWT se guarda en `sessionStorage` y `authInterceptor` lo envía como `Authorization: Bearer` a toda la API. No hay cookies ni CSRF.
+- Al ingresar, un **empleado** va a `/intranet` y un **cliente** a `/catalogo` (o a la pantalla que pidió, `?returnUrl=`).
+- La respuesta del login trae `cargo`, `inventario` y `compras`: los módulos de la intranet a los que su cargo da acceso. `moduloGuard` los usa en cada ruta (`data: { modulos: [...] }`) y el menú lateral muestra solo lo permitido. **El backend vuelve a validar** cada petición (`@PreAuthorize`).
+- Si el token vence (el backend responde 401) se cierra la sesión y se vuelve al login.
+- Un cliente que escribe una ruta de `/intranet` vuelve al catálogo; un empleado sin permiso para un módulo ve «Acceso restringido».
 
 ## Estructura
 
 ```text
-src/app/core                  API HTTP, modelos y sesión
-src/app/layout                barra lateral y cabecera
-src/app/shared                modales, iconos, paginador y formato
-src/app/features/auth         login y acceso restringido
-src/app/features/inventario
-  components                  formularios y comprobantes
-  pages                       catálogo, stock, movimientos, alertas y solicitudes
-src/app/features/compras      carrito, cotizaciones, órdenes y cliente de compras
+src/app
+  core/        auth (AuthService, interceptor JWT, guards), utils, models;
+               api.ts = InventarioApi (HTTP de los endpoints /inventario)
+  layout/      main-layout + header (tienda)  ·  intranet-layout (barra lateral)
+  shared/      componentes comunes (ticket, dialog, pager, icon, formato)
+  features/
+    auth/        login, registro, recuperar/restablecer contraseña, cuenta, sin-acceso
+    ventas/      tienda: models, pages, services, utils, ventas.routes.ts
+    inventario/  pages (páginas y sus formularios), inventario.routes.ts
+src/environments   environment.ts (producción) · environment.development.ts
 ```
 
-Cotizaciones y órdenes usan los controladores REST del backend: `GET /cotizaciones`, `PATCH /cotizaciones/{id}/aceptar`, `PATCH /cotizaciones/{id}/rechazar`, `POST /ordenes`, `GET /ordenes`, `GET /comprobantes`, `GET /pagos` y `POST /pagos`. Para registrar un pago se envían comprobante, monto, fecha e ID del método. Los métodos Efectivo (1) y Yape (2) corresponden al catálogo inicial de `database/oracle/02_catalogos.sql`. El carrito y las solicitudes usan los endpoints REST existentes de inventario.
+**Convención para módulos nuevos** (compras, ventas del jefe de ventas…): `features/<modulo>/{models,pages,services}` + `<modulo>.routes.ts`, y se cuelga en `app.routes.ts` dentro de `/intranet` con `moduloGuard`. Para agregar un módulo nuevo al enum de accesos hay que acordarlo con backend (`inventario` y `compras` salen hoy del cargo).
+
+### Estilos: cada área carga los suyos
+
+Las dos áreas usan clases con nombres parecidos (`.button`/`.boton`, `.notice`/`.alerta`) y estilos globales distintos. Por eso **no hay hoja global en `angular.json`**: `src/styles.css` (intranet) lo carga `IntranetLayout` y `estilos-tienda.css` (tienda) lo carga `MainLayout`, ambos con `ViewEncapsulation.None`. Angular los agrega al entrar al área y los quita al salir, así no se pisan. Si editas `styles.css`, solo afecta a la intranet.
 
 ## Desarrollo
 
-Requiere Node compatible con Angular 22 (se verificó con Node 24.21) y JDK 21 o superior para el backend.
-
-1. Para una base nueva, seguir `database/oracle/README.md`. Para una existente, aplicar las migraciones pendientes V1, V2 y V3. Configurar `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.
-2. Iniciar el backend desde la raíz con `./mvnw.cmd spring-boot:run`.
-3. En `frontend/`, ejecutar `npm ci` y `npm start`.
-4. Abrir `http://localhost:4200`. El proxy configurado en Angular dirige `/api`, `/img` y `/uploads` al backend en `localhost:8080` (perfil `dev`), tanto con `ng serve` como con `npm start`. Las rutas antiguas del panel se normalizan a rutas Angular para mantener el shell SPA.
-
-El frontend utiliza la sesión del servidor y CSRF; no guarda contraseñas ni tokens en localStorage/sessionStorage. Las rutas usan hash para poder servir la compilación como recursos estáticos de Spring sin reescrituras del servidor.
-
-## Integración con Spring
-
-Desde `frontend/`:
+Requiere Node compatible con Angular 22 (se verificó con Node 24) y el backend corriendo en `http://localhost:8080`.
 
 ```powershell
-npm run build:backend
+npm install
+npm start          # http://localhost:4200  (ng serve, configuración development)
+npm run build      # producción: environment.ts (apiUrl relativo /api/v1)
+npm run check      # verifica TypeScript
 ```
 
-Compila en producción y copia los bundles a `src/main/resources/static/inventario-app`. Después iniciar o empaquetar el backend. Abrir `/inventario-app/index.html`. Los accesos existentes `/admin/inventario`, `/control-stock`, `/movimientos`, `/alertas` y `/admin/productos` dirigen a las nuevas pantallas.
-
-Ejecutar de nuevo `build:backend` y reiniciar Spring después de cambios en el código Angular. `npm run build` solo compila; `npm run check` verifica TypeScript.
-
-## Vista previa aislada con H2
-
-Desde la raíz del proyecto, tras ejecutar `npm run build:backend` en `frontend/`:
-
-```powershell
-./mvnw.cmd spring-boot:test-run '-Dspring-boot.run.main-class=com.example.TrujillanosSAC.preview.InventarioPreviewApplication'
-```
-
-Abrir `http://localhost:9192/inventario-app/index.html`.
-
-Esta aplicación de prueba crea una base H2 en memoria y datos de ejemplo. No usa Oracle. Los datos se pierden al detenerla y sus clases no forman parte del JAR de producción.
-
-| Usuario de prueba | Cargo | Contraseña de prueba |
-|---|---|---|
-| `demo` | Administrador, acceso a inventario y solicitudes | `DemoInventario1!` |
-| `almacen-demo` | Almacenero | `DemoInventario1!` |
-| `compras-demo` | Jefe de compras | `DemoInventario1!` |
+- **Sin proxy.** En desarrollo `fileReplacements` cambia `environment.ts` por `environment.development.ts`: `apiUrl = http://localhost:8080/api/v1` y `backendUrl = http://localhost:8080` (las imágenes `/img/**` y `/uploads/**` las sirve Spring; se usan con `urlImagen()`).
+- **CORS.** El backend permite el origen de `API_CORS_ORIGENES` (por defecto `http://localhost:4200`). Si cambias el puerto del frontend, agrégalo allí.
+- **Pago con Culqi.** La llave pública (`pk_test_…`) está en el environment; la secreta vive solo en el backend.
+- **Rutas normales** (sin `#`): el servidor que publique el build debe devolver `index.html` para cualquier ruta.
 
 ## Decisiones de funcionamiento
 

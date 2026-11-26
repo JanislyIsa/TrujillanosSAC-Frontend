@@ -1,10 +1,16 @@
 node_modules/
 .angular/
 dist/
+coverage/
 out-tsc/
+.scannerwork/
+.sonar/
 .idea/
 .vscode/
 *.log
 .env
 .env.*
 !.env.example
+
+# Respaldos locales
+respaldo-*.tar.gz
