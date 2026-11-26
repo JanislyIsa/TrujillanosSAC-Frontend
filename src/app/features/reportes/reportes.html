@@ -1,9 +1,9 @@
 <header class="page-heading"><div><p class="eyebrow">INTRANET · ANÁLISIS</p><h1>Reportes</h1><p>Consulta ventas, inventario y compras en un rango de fechas.</p></div><button class="button secondary" [disabled]="cargando()" (click)="cargar()"><app-icon name="refresh"/>Actualizar</button></header>
 
 <div class="tabs" role="tablist" aria-label="Tipo de reporte">
-  <button class="tab" [class.active]="tipo()==='categorias'" role="tab" [attr.aria-selected]="tipo()==='categorias'" (click)="seleccionar('categorias')">Ventas por categoría</button>
-  <button class="tab" [class.active]="tipo()==='productos'" role="tab" [attr.aria-selected]="tipo()==='productos'" (click)="seleccionar('productos')">Más vendidos</button>
-  <button class="tab" [class.active]="tipo()==='movimientos'" role="tab" [attr.aria-selected]="tipo()==='movimientos'" (click)="seleccionar('movimientos')">Movimientos</button>
+  @if(puedeVentas()){<button class="tab" [class.active]="tipo()==='categorias'" role="tab" [attr.aria-selected]="tipo()==='categorias'" (click)="seleccionar('categorias')">Ventas por categoría</button>
+  <button class="tab" [class.active]="tipo()==='productos'" role="tab" [attr.aria-selected]="tipo()==='productos'" (click)="seleccionar('productos')">Más vendidos</button>}
+  @if(puedeMovimientos()){<button class="tab" [class.active]="tipo()==='movimientos'" role="tab" [attr.aria-selected]="tipo()==='movimientos'" (click)="seleccionar('movimientos')">Movimientos</button>}
   @if(puedeCompras()){<button class="tab" [class.active]="tipo()==='proveedores'" role="tab" [attr.aria-selected]="tipo()==='proveedores'" (click)="seleccionar('proveedores')">Compras por proveedor</button>}
 </div>
 

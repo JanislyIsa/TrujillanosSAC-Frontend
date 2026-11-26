@@ -25,22 +25,42 @@ export class ReportesPage {
   readonly error = signal('');
   readonly desde = signal('');
   readonly hasta = signal('');
-  readonly puedeCompras = computed(() => this.auth.puede('compras'));
+  private readonly cargo = computed(() => (this.auth.sesion()?.cargo ?? '').normalize('NFD').replace(/\p{M}/gu, '').trim().toUpperCase().replace(/\s+/g, '_'));
+  private readonly esAdmin = computed(() => ['ADMIN', 'ADMINISTRADOR'].includes(this.cargo()));
+  readonly puedeVentas = computed(() => this.esAdmin() || ['JEFE_VENTAS', 'JEFE_DE_VENTAS'].includes(this.cargo()));
+  readonly puedeMovimientos = computed(() => this.esAdmin() || this.auth.puede('inventario'));
+  readonly puedeCompras = computed(() => this.esAdmin() || this.auth.puede('compras'));
   readonly titulo = computed(() => ({ categorias: 'Ventas por categoría', productos: 'Productos más vendidos', movimientos: 'Movimientos de inventario', proveedores: 'Compras por proveedor' })[this.tipo()]);
   readonly totalUnidades = computed(() => this.filas().reduce((s, f) => s + ('unidadesVendidas' in f ? Number(f.unidadesVendidas) : 'totalUnidades' in f ? Number(f.totalUnidades) : 0), 0));
   readonly totalMonto = computed(() => this.filas().reduce((s, f) => s + ('montoTotal' in f ? Number(f.montoTotal) : 0), 0));
   readonly totalOrdenes = computed(() => this.filas().reduce((s, f) => s + ('cantidadOrdenes' in f ? Number(f.cantidadOrdenes) : 0), 0));
   readonly maxBarra = computed(() => Math.max(1, ...this.filas().map(f => 'montoTotal' in f ? Number(f.montoTotal) : 0)));
 
-  constructor() { void this.cargar(); }
+  constructor() {
+    this.tipo.set(this.puedeVentas() ? 'categorias' : this.puedeMovimientos() ? 'movimientos' : 'proveedores');
+    void this.cargar();
+  }
+
+  private puedeVer(tipo: TipoReporte): boolean {
+    switch (tipo) {
+      case 'categorias': case 'productos': return this.puedeVentas();
+      case 'movimientos': return this.puedeMovimientos();
+      case 'proveedores': return this.puedeCompras();
+    }
+  }
 
   seleccionar(tipo: TipoReporte): void {
-    if (tipo === 'proveedores' && !this.puedeCompras()) return;
+    if (!this.puedeVer(tipo)) return;
     this.tipo.set(tipo);
     void this.cargar();
   }
 
   async cargar(): Promise<void> {
+    if (!this.puedeVer(this.tipo())) {
+      this.filas.set([]);
+      this.error.set('Tu cargo no tiene permiso para consultar este reporte.');
+      return;
+    }
     this.cargando.set(true); this.error.set('');
     try {
       const isFechaHora = this.tipo() === 'categorias' || this.tipo() === 'productos';
