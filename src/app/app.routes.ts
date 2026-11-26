@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { empleadoGuard, proveedorGuard } from './core/auth/auth-guard';
+import { empleadoGuard, proveedorGuard, reportesGuard } from './core/auth/auth-guard';
 import { IntranetLayout } from './layout/intranet-layout/intranet-layout';
 import { MainLayout } from './layout/main-layout/main-layout';
 
@@ -31,6 +31,12 @@ export const routes: Routes = [
         path: 'compras',
         loadChildren: () =>
           import('./features/compras/compras.routes').then((m) => m.COMPRAS_ROUTES),
+      },
+      {
+        path: 'reportes',
+        canActivate: [reportesGuard],
+        loadComponent: () => import('./features/reportes/reportes').then((m) => m.ReportesPage),
+        title: 'Reportes · El Trujillano',
       },
     ],
   },

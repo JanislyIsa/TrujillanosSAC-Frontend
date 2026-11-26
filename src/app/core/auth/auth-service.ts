@@ -83,6 +83,18 @@ export class AuthService {
     return !!sesion && sesion.roles.includes('EMPLEADO') && sesion[modulo] === true;
   }
 
+  /** Los reportes se muestran si el cargo tiene ventas, inventario o compras asignados. */
+  puedeVerReportes(): boolean {
+    const cargo = (this._sesion()?.cargo ?? '')
+      .normalize('NFD')
+      .replace(/\p{M}/gu, '')
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, '_');
+    const puedeVentas = ['ADMIN', 'ADMINISTRADOR', 'JEFE_VENTAS', 'JEFE_DE_VENTAS'].includes(cargo);
+    return puedeVentas || this.puede('inventario') || this.puede('compras');
+  }
+
   login(username: string, password: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${environment.apiUrl}/auth/login`, {

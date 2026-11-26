@@ -54,3 +54,11 @@ export const moduloGuard: CanActivateFn = (ruta, estado) => {
   const modulos = (ruta.data['modulos'] ?? []) as ModuloIntranet[];
   return modulos.some((m) => auth.puede(m)) || router.createUrlTree(['/intranet/sin-acceso']);
 };
+
+/** Solo cargos con al menos un reporte asignado pueden abrir el apartado de reportes. */
+export const reportesGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  return auth.puedeVerReportes()
+    ? true
+    : inject(Router).createUrlTree(['/intranet/sin-acceso']);
+};
