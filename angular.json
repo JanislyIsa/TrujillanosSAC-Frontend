@@ -59,6 +59,24 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "buildTarget": "inventario:build:development",
+            "runner": "vitest",
+            "coverage": true,
+            "coverageReporters": ["html", "lcovonly", "text-summary"],
+            "coverageInclude": ["src/app/**/*.ts"],
+            "coverageExclude": [
+              "src/main.ts",
+              "src/environments/**",
+              "src/app/**/*.routes.ts",
+              "src/app/**/*.spec.ts",
+              "src/app/**/*.test.ts"
+            ]
+          }
         }
       }
     }

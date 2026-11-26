@@ -1,10 +1,14 @@
-import { Component,computed,inject,input,OnInit,output,signal } from '@angular/core';
-import { NonNullableFormBuilder,ReactiveFormsModule,Validators } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { InventarioApi,mensajeError } from '../../../core/api';
-import { Comprobante,Item,TipoItem } from '../../../core/models';
-import { Dialog } from '../../../shared/dialog';import { Icon } from '../../../shared/icon';import { codigo,NumeroPipe } from '../../../shared/format';
-@Component({selector:'app-movimiento-form',imports:[Dialog,Icon,NumeroPipe,ReactiveFormsModule],template:`
+import {Component, computed, inject, input, OnInit, output, signal} from '@angular/core';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {InventarioApi, mensajeError} from '../../../core/api';
+import {Comprobante, Item, TipoItem} from '../../../core/models';
+import {Dialog} from '../../../shared/dialog';
+import {Icon} from '../../../shared/icon';
+import {codigo, NumeroPipe} from '../../../shared/format';
+
+@Component({
+    selector: 'app-movimiento-form', imports: [Dialog, Icon, NumeroPipe, ReactiveFormsModule], template: `
 <app-dialog title="Registrar movimiento" subtitle="Registra un ingreso o una salida de tu almacén." [busy]="busy()" (closed)="closed.emit()">
 @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
 @if(loading()){<div class="loading-row"><span class="spinner"></span>Cargando inventario…</div>}
@@ -17,17 +21,67 @@ import { Dialog } from '../../../shared/dialog';import { Icon } from '../../../s
 @if(form.invalid&&form.touched){<p class="field-error">Selecciona un elemento, ingresa una cantidad entera positiva y un motivo.</p>}
 </div></form>
 <div dialog-footer><button class="button secondary" [disabled]="busy()" (click)="closed.emit()">Cancelar</button><button class="button primary" form="movimiento-form" type="submit" [disabled]="busy()||loading()">{{busy()?'Registrando…':'Registrar movimiento'}}</button></div>
-</app-dialog>`})
+</app-dialog>`
+})
 export class MovimientoForm implements OnInit {
-  private readonly api=inject(InventarioApi);private readonly fb=inject(NonNullableFormBuilder);
-  readonly closed=output<void>();readonly saved=output<Comprobante>();readonly busy=signal(false);readonly loading=signal(true);readonly error=signal('');readonly items=signal<Item[]>([]);readonly codigo=codigo;
-  readonly form=this.fb.group({tipoMovimiento:['INGRESO'],tipoItem:['PRODUCTO'],idItem:[0,Validators.min(1)],cantidad:[1,[Validators.required,Validators.min(1),Validators.pattern(/^\d+$/)]],motivo:['',[Validators.required,Validators.maxLength(200)]]});
-  private readonly valores=toSignal(this.form.valueChanges,{initialValue:this.form.getRawValue()});
-  readonly opciones=computed(()=>this.items().filter(i=>i.tipoItem===this.valores().tipoItem&&(i.activo||this.valores().tipoMovimiento==='SALIDA')));
-  readonly seleccionado=computed(()=>this.opciones().find(i=>i.id===this.valores().idItem));
-  readonly nuevo=computed(()=>{const v=this.valores(),stock=this.seleccionado()?.stock??0;return stock+(v.tipoMovimiento==='SALIDA'?-1:1)*Number(v.cantidad??0);});
-  async ngOnInit(){try{this.items.set(await this.api.todos<Item>('/stock'));}catch(e){this.error.set(mensajeError(e));}finally{this.loading.set(false);}}
-  async guardar(){this.form.markAllAsTouched();if(this.form.invalid||this.busy())return;if(this.nuevo()<0){this.error.set('La cantidad de salida supera el stock disponible.');return;}if(!this.seleccionado()){this.error.set('Selecciona un elemento válido.');return;}const v=this.form.getRawValue();if(!v.motivo.trim()){this.error.set('Ingresa el motivo del movimiento.');return;}
-    this.busy.set(true);this.error.set('');try{this.saved.emit(await this.api.post<Comprobante>('/movimientos',{...v,motivo:v.motivo.trim()}));}catch(e){this.error.set(mensajeError(e));}finally{this.busy.set(false);}
-  }
+    private readonly api = inject(InventarioApi);
+    private readonly fb = inject(NonNullableFormBuilder);
+    readonly closed = output<void>();
+    readonly saved = output<Comprobante>();
+    readonly busy = signal(false);
+    readonly loading = signal(true);
+    readonly error = signal('');
+    readonly items = signal<Item[]>([]);
+    readonly codigo = codigo;
+    readonly form = this.fb.group({
+        tipoMovimiento: ['INGRESO'],
+        tipoItem: ['PRODUCTO'],
+        idItem: [0, Validators.min(1)],
+        cantidad: [1, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
+        motivo: ['', [Validators.required, Validators.maxLength(200)]]
+    });
+    private readonly valores = toSignal(this.form.valueChanges, {initialValue: this.form.getRawValue()});
+    readonly opciones = computed(() => this.items().filter(i => i.tipoItem === this.valores().tipoItem && (i.activo || this.valores().tipoMovimiento === 'SALIDA')));
+    readonly seleccionado = computed(() => this.opciones().find(i => i.id === this.valores().idItem));
+    readonly nuevo = computed(() => {
+        const v = this.valores(), stock = this.seleccionado()?.stock ?? 0;
+        return stock + (v.tipoMovimiento === 'SALIDA' ? -1 : 1) * Number(v.cantidad ?? 0);
+    });
+
+    async ngOnInit() {
+        try {
+            this.items.set(await this.api.todos<Item>('/stock'));
+        } catch (e) {
+            this.error.set(mensajeError(e));
+        } finally {
+            this.loading.set(false);
+        }
+    }
+
+    async guardar() {
+        this.form.markAllAsTouched();
+        if (this.form.invalid || this.busy()) return;
+        if (this.nuevo() < 0) {
+            this.error.set('La cantidad de salida supera el stock disponible.');
+            return;
+        }
+        if (!this.seleccionado()) {
+            this.error.set('Selecciona un elemento válido.');
+            return;
+        }
+        const v = this.form.getRawValue();
+        if (!v.motivo.trim()) {
+            this.error.set('Ingresa el motivo del movimiento.');
+            return;
+        }
+        this.busy.set(true);
+        this.error.set('');
+        try {
+            this.saved.emit(await this.api.post<Comprobante>('/movimientos', {...v, motivo: v.motivo.trim()}));
+        } catch (e) {
+            this.error.set(mensajeError(e));
+        } finally {
+            this.busy.set(false);
+        }
+    }
 }

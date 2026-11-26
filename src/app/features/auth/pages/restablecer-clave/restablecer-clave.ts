@@ -49,7 +49,7 @@ export class RestablecerClave {
     this.enviando.set(true);
     this.error.set(null);
     this.auth.restablecerClave(token, this.form.controls.nuevaClave.value).subscribe({
-      next: () => void this.router.navigate(['/login'], { queryParams: { clave: 'actualizada' } }),
+      next: () => void this.router.navigate(['/login'], { queryParams: { aviso: 'actualizada' } }),
       error: (e: HttpErrorResponse) => {
         this.error.set(mensajeError(e));
         this.enviando.set(false);
