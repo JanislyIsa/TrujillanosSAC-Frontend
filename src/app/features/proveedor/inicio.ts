@@ -1,12 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { ComprasApi } from '../compras/compras-api';
-import { Icon } from '../../shared/icon';
+import {Component, inject} from '@angular/core';
+import {RouterLink} from '@angular/router';
+import {ComprasApi} from '../compras/compras-api';
+import {Icon} from '../../shared/icon';
 
 /** Inicio del portal de proveedores (/proveedor): accesos a solicitudes y cotizaciones. */
 @Component({
-  imports: [RouterLink, Icon],
-  template: `
+    imports: [RouterLink, Icon],
+    template: `
     <header class="page-heading">
       <div>
         <h1>Hola, {{ nombre }}</h1>
@@ -26,5 +26,5 @@ import { Icon } from '../../shared/icon';
   `,
 })
 export class InicioProveedorPage {
-  readonly nombre = inject(ComprasApi).nombreUsuario();
+    readonly nombre = inject(ComprasApi).nombreUsuario();
 }

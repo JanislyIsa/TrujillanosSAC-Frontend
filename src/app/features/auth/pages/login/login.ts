@@ -16,8 +16,8 @@ export class Login {
 
   /** Pantalla a la que volver tras ingresar (?returnUrl=), enlazada con withComponentInputBinding. */
   readonly returnUrl = input<string>();
-  /** ?clave=actualizada: llegó desde restablecer la contraseña y se muestra un aviso. */
-  readonly aviso = input<string>(undefined, { alias: 'clave' });
+  /** ?aviso=actualizada: llegó desde restablecer la contraseña y se muestra un aviso. */
+  readonly aviso = input<string>();
   /** Hay una sesión abierta (de cliente): cambia el texto del aviso de acceso a la intranet. */
   readonly sesionIniciada = this.auth.autenticado;
   /** ?motivo=empleado: se intentó entrar a la intranet con una cuenta que no es de empleado. */
