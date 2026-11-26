@@ -58,10 +58,7 @@ export const moduloGuard: CanActivateFn = (ruta, estado) => {
 /** Solo cargos con al menos un reporte asignado pueden abrir el apartado de reportes. */
 export const reportesGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
-  const cargo = (auth.sesion()?.cargo ?? '').normalize('NFD').replace(/\p{M}/gu, '').trim().toUpperCase().replace(/\s+/g, '_');
-  const ventas = ['JEFE_VENTAS', 'JEFE_DE_VENTAS'].includes(cargo);
-  const administrador = ['ADMIN', 'ADMINISTRADOR'].includes(cargo);
-  return ventas || administrador || auth.puede('inventario') || auth.puede('compras')
+  return auth.puedeVerReportes()
     ? true
     : inject(Router).createUrlTree(['/intranet/sin-acceso']);
 };
